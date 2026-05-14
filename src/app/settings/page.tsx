@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import {
   Settings as SettingsIcon,
   Cpu,
@@ -14,6 +14,8 @@ import {
   RotateCcw,
   Trash2,
   Shield,
+  Download,
+  Upload,
 } from "lucide-react";
 import { useSettings } from "@/lib/settings-context";
 import { useData } from "@/lib/data-context";
@@ -58,12 +60,75 @@ const PROVIDERS: {
 export default function SettingsPage() {
   const { settings, updateSettings, isConfigured, toProviderConfig } =
     useSettings();
-  const { suites, runs, clearAllData, resetToSeed } = useData();
+  const { suites, runs, clearAllData, resetToSeed, importData } = useData();
   const [showKey, setShowKey] = useState(false);
   const [testStatus, setTestStatus] = useState<
     "idle" | "testing" | "success" | "error"
   >("idle");
   const [testError, setTestError] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleExport = () => {
+    const data = { suites, runs, exportedAt: new Date().toISOString() };
+    const blob = new Blob([JSON.stringify(data, null, 2)], {
+      type: "application/json",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `agentbench-export-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleImport = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const text = ev.target?.result as string;
+        const isJsonl = file.name.endsWith(".jsonl");
+
+        if (isJsonl) {
+          const lines = text.trim().split("\n").filter(Boolean);
+          const cases = lines.map((line, i) => {
+            const obj = JSON.parse(line);
+            return {
+              id: `tc-${Date.now()}-${i}`,
+              name: obj.name || `Case ${i + 1}`,
+              input: obj.input || "",
+              expectedOutput: obj.expectedOutput || obj.expected_output || obj.expected || "",
+              category: obj.category || "imported",
+            };
+          });
+          const suite = {
+            id: `suite-${Date.now()}`,
+            name: file.name.replace(/\.jsonl$/i, ""),
+            description: `Imported from ${file.name}`,
+            agentType: "custom",
+            cases,
+          };
+          importData({ suites: [suite] });
+        } else {
+          const data = JSON.parse(text);
+          importData({
+            suites: data.suites || [],
+            runs: data.runs || [],
+          });
+        }
+      } catch {
+        alert("Failed to parse file. Please provide valid JSON or JSONL.");
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = "";
+  };
 
   const currentProvider = PROVIDERS.find((p) => p.value === settings.provider);
 
@@ -216,7 +281,7 @@ export default function SettingsPage() {
           </button>
         </div>
         <p className="text-[10px] text-[var(--text-muted)] mt-1.5">
-          Key is stored in browser localStorage only — never sent to our servers
+          Key is stored in localStorage. When you trigger tests or AI analysis, the key is sent to this app's server route which forwards it to the configured provider. For full local control, self-host the app.
         </p>
       </div>
 
@@ -462,6 +527,9 @@ export default function SettingsPage() {
             placeholder="Leave empty if endpoint doesn't require auth"
             className="w-full bg-[var(--bg-secondary)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--accent)] transition-colors"
           />
+          <p className="text-[10px] text-[var(--text-muted)] mt-1.5">
+            Stored in localStorage. Sent to this app's server route only when you run tests, then forwarded to your agent endpoint.
+          </p>
         </div>
 
         {/* Model */}
@@ -568,7 +636,28 @@ export default function SettingsPage() {
         <p className="text-[10px] text-[var(--text-muted)] mb-3">
           {suites.length} suite{suites.length !== 1 ? "s" : ""}, {runs.length} run{runs.length !== 1 ? "s" : ""} stored locally
         </p>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
+          <button
+            onClick={handleExport}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:opacity-80 transition-colors border border-[var(--border)]"
+          >
+            <Download size={12} />
+            Export JSON
+          </button>
+          <button
+            onClick={handleImport}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:opacity-80 transition-colors border border-[var(--border)]"
+          >
+            <Upload size={12} />
+            Import JSON / JSONL
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".json,.jsonl"
+            onChange={handleFileChange}
+            className="hidden"
+          />
           <button
             onClick={resetToSeed}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-[var(--accent-bg)] text-[var(--accent-light)] hover:opacity-80 transition-colors"

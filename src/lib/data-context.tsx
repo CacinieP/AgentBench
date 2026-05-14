@@ -85,6 +85,7 @@ interface DataContextType {
   deleteRun: (id: string) => void;
   clearAllData: () => void;
   resetToSeed: () => void;
+  importData: (data: { suites?: TestSuite[]; runs?: TestRun[] }) => void;
 }
 
 const DataContext = createContext<DataContextType>({
@@ -97,6 +98,7 @@ const DataContext = createContext<DataContextType>({
   deleteRun: () => {},
   clearAllData: () => {},
   resetToSeed: () => {},
+  importData: () => {},
 });
 
 export function DataProvider({ children }: { children: ReactNode }) {
@@ -157,6 +159,24 @@ export function DataProvider({ children }: { children: ReactNode }) {
     emitChange();
   }, []);
 
+  const importData = useCallback(
+    (data: { suites?: TestSuite[]; runs?: TestRun[] }) => {
+      const existingIds = new Set(readSuites().map((s) => s.id));
+      const existingRunIds = new Set(readRuns().map((r) => r.id));
+
+      if (data.suites?.length) {
+        const newSuites = data.suites.filter((s) => !existingIds.has(s.id));
+        writeSuites([...readSuites(), ...newSuites]);
+      }
+      if (data.runs?.length) {
+        const newRuns = data.runs.filter((r) => !existingRunIds.has(r.id));
+        writeRuns([...readRuns(), ...newRuns]);
+      }
+      emitChange();
+    },
+    []
+  );
+
   const value = useMemo(
     () => ({
       suites,
@@ -168,8 +188,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
       deleteRun,
       clearAllData,
       resetToSeed,
+      importData,
     }),
-    [suites, runs, addSuite, updateSuite, deleteSuite, addRun, deleteRun, clearAllData, resetToSeed]
+    [suites, runs, addSuite, updateSuite, deleteSuite, addRun, deleteRun, clearAllData, resetToSeed, importData]
   );
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;

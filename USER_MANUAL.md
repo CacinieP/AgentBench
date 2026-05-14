@@ -617,9 +617,10 @@ Authorization: Bearer {api-key} (如有)
 
 ### API Key 安全
 
-- API Key 存储在 localStorage 中
-- 仅在你主动触发测试或 AI 分析时发送给配置的 API 端点
-- 不会发送到 AgentBench 自身或其他第三方
+- API Key 存储在浏览器 localStorage 中
+- 当你触发测试或 AI 分析时，Key 会通过 HTTPS 发送到本应用的 server route（`/api/execute` 或 `/api/analyze`），由服务端转发至配置的 AI provider（如 Anthropic、OpenAI）或 Agent 端点
+- 本应用不会将 Key 存储到数据库或日志中，也不会发送到其他第三方
+- 如需完全本地控制（Key 不经过任何服务端），请自行部署（self-host）本应用
 
 ---
 

@@ -9,12 +9,19 @@
 
 ## 它能做什么
 
+## 截图预览
+
+| 仪表盘 | 测试套件 | 版本对比 |
+|---|---|---|
+| ![仪表盘](screenshots/dashboard.png) | ![套件](screenshots/suites.png) | ![对比](screenshots/compare.png) |
+
 AgentBench 是一个 EvalOps 平台，帮助团队交付可靠的 AI Agent，提供以下核心能力：
 
 - **测试套件管理** — 为 AI Agent 定义测试用例，包含输入与预期输出
 - **回归测试** — 运行评估并在不同 Agent 版本间追踪质量变化
 - **版本对比** — 并排对比两次运行结果，在部署前捕获退化
 - **AI 智能分析** — Claude 自动分析失败原因并给出修复建议
+- **API Key 透明机制** — Key 存储在 localStorage，仅在你触发测试或分析时发送到本应用的 server route，由服务端转发至配置的 provider。如需完全本地控制，请自行部署。
 
 ## 为什么做这个项目？
 
@@ -29,7 +36,7 @@ AgentBench 是一个 EvalOps 平台，帮助团队交付可靠的 AI Agent，提
 - **Next.js 16**（App Router、Turbopack）
 - **React 19** + TypeScript
 - **Tailwind CSS 4** — 暗色主题仪表盘 UI
-- **Claude API** — 智能分析测试失败
+- **多 Provider AI** — Anthropic / OpenAI / OpenAI 兼容 API
 
 ## 快速开始
 

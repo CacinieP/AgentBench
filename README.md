@@ -9,12 +9,19 @@
 
 ## Features
 
+## Screenshots
+
+| Dashboard | Test Suites | Compare Runs |
+|---|---|---|
+| ![Dashboard](screenshots/dashboard.png) | ![Suites](screenshots/suites.png) | ![Compare](screenshots/compare.png) |
+
 - **Test Suite Management** — Create custom test suites with inputs and expected outputs for your AI agents
 - **Regression Testing** — Run evaluations and track quality across agent versions
 - **Version Comparison** — Side-by-side diff between runs to catch regressions before deployment
 - **AI-Powered Analysis** — Multi-provider AI analyzes failures and suggests fixes
 - **Multi-Provider Support** — Works with Anthropic, OpenAI, and any OpenAI-compatible API (DeepSeek, Mistral, Groq, Together, OpenRouter, SiliconFlow, etc.)
 - **Local-First** — All data stored in browser localStorage, no backend database required
+- **API Key Transparency** — Keys are stored in localStorage and sent to this app's server routes only when you trigger tests or analysis; the server forwards them to the configured provider. For full local control, self-host the app.
 
 ## Tech Stack
 
@@ -91,7 +98,7 @@ src/
 - **Suites & Runs** → stored in `localStorage` via `useSyncExternalStore` (reactive context)
 - **AI Settings** → stored in `localStorage` separately from test data
 - **Sample Data** → auto-seeded on first visit; clearable via Settings page
-- **AI Analysis** → client sends provider config to `/api/analyze`; server calls the configured API
+- **AI Analysis** → client sends provider config (including API key) to `/api/analyze`; server forwards the key to call the configured provider API. Keys are not persisted server-side.
 
 ## Why This Project?
 
