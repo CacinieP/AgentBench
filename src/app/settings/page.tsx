@@ -497,11 +497,13 @@ export default function SettingsPage() {
         <p className="text-xs text-[var(--text-muted)] mb-3">
           How agent responses are scored against expected output. Can be overridden per test case.
         </p>
-        <div className="grid grid-cols-3 gap-2 mb-3">
+        <div className="grid grid-cols-5 gap-2 mb-3">
           {([
-            { value: "contains", label: "Contains", desc: "Checks key phrases" },
-            { value: "exact_match", label: "Exact Match", desc: "Requires full match" },
-            { value: "regex", label: "Regex", desc: "Pattern matching" },
+            { value: "contains", label: "Contains", desc: "Key phrases" },
+            { value: "exact_match", label: "Exact", desc: "Full match" },
+            { value: "regex", label: "Regex", desc: "Pattern" },
+            { value: "json_schema", label: "JSON Schema", desc: "Structure" },
+            { value: "llm_judge", label: "LLM Judge", desc: "AI scoring" },
           ] as const).map((e) => (
             <button
               key={e.value}

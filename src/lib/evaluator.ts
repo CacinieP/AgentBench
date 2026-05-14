@@ -9,6 +9,10 @@ export interface EvalOutput {
 
 const DEFAULT_THRESHOLD = 0.6;
 
+export function isAsyncEvaluator(type: EvaluatorType): boolean {
+  return type === "llm_judge";
+}
+
 export function evaluate(
   actual: string,
   expected: string,
@@ -22,19 +26,85 @@ export function evaluate(
     case "contains":
       return containsMatch(actual, expected, threshold, config.caseInsensitive ?? false);
     case "regex":
-      return regexMatch(actual, config.pattern || expected, threshold);
+      return regexMatch(actual, expected, config.pattern || "", threshold);
     case "json_schema":
-      return jsonSchemaMatch(actual, threshold);
+      return jsonSchemaMatch(actual, config.schema, threshold);
     case "llm_judge":
-      // LLM judge requires async call, return a placeholder that will be resolved later
-      return {
-        score: containsScore(actual, expected),
-        passed: containsScore(actual, expected) >= threshold,
-        rationale: "LLM judge evaluation (sync fallback: contains check)",
-        evaluatorType: "llm_judge",
-      };
+      // Should not be called for llm_judge — use evaluateWithLLM instead
+      return containsMatch(actual, expected, threshold, false);
     default:
       return exactMatch(actual, expected, threshold, false);
+  }
+}
+
+export async function evaluateWithLLM(
+  actual: string,
+  expected: string,
+  config: EvaluatorConfig,
+  judgeProvider: (prompt: string) => Promise<string>
+): Promise<EvalOutput> {
+  const threshold = config.threshold ?? DEFAULT_THRESHOLD;
+  const judgePrompt = config.judgePrompt || buildDefaultJudgePrompt(actual, expected);
+
+  try {
+    const response = await judgeProvider(judgePrompt);
+    const parsed = parseJudgeResponse(response);
+
+    return {
+      score: parsed.score,
+      passed: parsed.score >= threshold,
+      rationale: parsed.rationale,
+      evaluatorType: "llm_judge",
+    };
+  } catch (e) {
+    const fallback = containsMatch(actual, expected, threshold, false);
+    const errMsg = e instanceof Error ? e.message : "unknown error";
+    return {
+      ...fallback,
+      rationale: `LLM judge failed (${errMsg}), fell back to contains: ${fallback.rationale}`,
+      evaluatorType: "llm_judge",
+    };
+  }
+}
+
+function buildDefaultJudgePrompt(actual: string, expected: string): string {
+  return `You are an expert test evaluator. Compare the ACTUAL output against the EXPECTED output and score how well they match.
+
+EXPECTED:
+${expected}
+
+ACTUAL:
+${actual}
+
+Respond with ONLY a JSON object in this exact format:
+{"score": <number 0-1>, "rationale": "<one sentence explanation>"}
+
+Scoring guide:
+- 1.0: Perfect match or semantically equivalent
+- 0.8-0.9: Covers all key points with minor differences
+- 0.6-0.7: Covers most key points but missing some details
+- 0.3-0.5: Partial coverage, significant gaps
+- 0.0-0.2: Mostly incorrect or irrelevant`;
+}
+
+function parseJudgeResponse(text: string): { score: number; rationale: string } {
+  // Try to extract JSON from the response
+  const jsonMatch = text.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) {
+    return { score: 0.5, rationale: "Could not parse LLM judge response" };
+  }
+
+  try {
+    const parsed = JSON.parse(jsonMatch[0]);
+    const score = typeof parsed.score === "number"
+      ? Math.max(0, Math.min(1, parsed.score))
+      : 0.5;
+    const rationale = typeof parsed.rationale === "string"
+      ? parsed.rationale
+      : "LLM judge evaluation";
+    return { score, rationale };
+  } catch {
+    return { score: 0.5, rationale: "Could not parse LLM judge response" };
   }
 }
 
@@ -64,7 +134,6 @@ function containsMatch(
   const a = caseInsensitive ? actual.toLowerCase() : actual;
   const e = caseInsensitive ? expected.toLowerCase() : expected;
 
-  // Split expected into key phrases (by newlines or semicolons)
   const phrases = e.split(/[\n;]/).map((s) => s.trim()).filter(Boolean);
   if (phrases.length === 0) phrases.push(e);
 
@@ -82,48 +151,37 @@ function containsMatch(
   };
 }
 
-function regexMatch(actual: string, pattern: string, threshold: number): EvalOutput {
+function regexMatch(actual: string, expected: string, pattern: string, threshold: number): EvalOutput {
+  // If pattern is empty, use expected as literal pattern
+  const resolvedPattern = pattern || expected.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   try {
-    const regex = new RegExp(pattern, "s");
+    const regex = new RegExp(resolvedPattern, "s");
     const match = regex.test(actual);
     const score = match ? 1.0 : 0.0;
     return {
       score,
       passed: score >= threshold,
-      rationale: match ? "Regex matched" : `Regex "${pattern}" did not match`,
+      rationale: match ? "Regex matched" : `Regex did not match`,
       evaluatorType: "regex",
     };
   } catch {
     return {
       score: 0,
       passed: false,
-      rationale: `Invalid regex pattern: ${pattern}`,
+      rationale: `Invalid regex pattern`,
       evaluatorType: "regex",
     };
   }
 }
 
-function jsonSchemaMatch(actual: string, threshold: number): EvalOutput {
+function jsonSchemaMatch(
+  actual: string,
+  schema: Record<string, unknown> | undefined,
+  threshold: number
+): EvalOutput {
+  let parsed: unknown;
   try {
-    const parsed = JSON.parse(actual);
-    // Basic validation: must be valid JSON and be an object or array
-    if (typeof parsed !== "object" || parsed === null) {
-      return {
-        score: 0.3,
-        passed: 0.3 >= threshold,
-        rationale: "Valid JSON but not an object or array",
-        evaluatorType: "json_schema",
-      };
-    }
-    // Check if it has keys/structure
-    const keys = Object.keys(parsed);
-    const score = keys.length > 0 ? 1.0 : 0.5;
-    return {
-      score,
-      passed: score >= threshold,
-      rationale: `Valid JSON with ${keys.length} top-level keys`,
-      evaluatorType: "json_schema",
-    };
+    parsed = JSON.parse(actual);
   } catch (e) {
     return {
       score: 0,
@@ -132,24 +190,123 @@ function jsonSchemaMatch(actual: string, threshold: number): EvalOutput {
       evaluatorType: "json_schema",
     };
   }
+
+  if (typeof parsed !== "object" || parsed === null) {
+    return {
+      score: 0.3,
+      passed: 0.3 >= threshold,
+      rationale: "Valid JSON but not an object or array",
+      evaluatorType: "json_schema",
+    };
+  }
+
+  // If no schema provided, just check it's valid structured JSON
+  if (!schema || Object.keys(schema).length === 0) {
+    const isArray = Array.isArray(parsed);
+    const keys = isArray ? String((parsed as unknown[]).length) + " items" : Object.keys(parsed as Record<string, unknown>).length + " keys";
+    const score = 1.0;
+    return {
+      score,
+      passed: score >= threshold,
+      rationale: `Valid ${isArray ? "array" : "object"} with ${keys}`,
+      evaluatorType: "json_schema",
+    };
+  }
+
+  // Validate against provided schema
+  return validateAgainstSchema(parsed, schema, threshold);
 }
 
-function containsScore(actual: string, expected: string): number {
-  const a = actual.toLowerCase();
-  const phrases = expected.toLowerCase().split(/[\n;]/).map((s) => s.trim()).filter(Boolean);
-  if (phrases.length === 0) return 0;
+function validateAgainstSchema(
+  data: unknown,
+  schema: Record<string, unknown>,
+  threshold: number
+): EvalOutput {
+  let total = 0;
   let matched = 0;
-  for (const p of phrases) {
-    if (a.includes(p)) matched++;
+  const issues: string[] = [];
+
+  // Check required fields if specified
+  const required = schema.required;
+  if (Array.isArray(required)) {
+    for (const field of required) {
+      total++;
+      if (typeof data === "object" && data !== null && field in (data as Record<string, unknown>)) {
+        matched++;
+      } else {
+        issues.push(`Missing required field: ${field}`);
+      }
+    }
   }
-  return matched / phrases.length;
+
+  // Check type if specified
+  const schemaType = schema.type;
+  if (typeof schemaType === "string") {
+    total++;
+    const actualType = Array.isArray(data) ? "array" : typeof data;
+    if (actualType === schemaType || (schemaType === "object" && typeof data === "object" && !Array.isArray(data))) {
+      matched++;
+    } else {
+      issues.push(`Expected type "${schemaType}", got "${actualType}"`);
+    }
+  }
+
+  // Check properties if specified
+  const properties = schema.properties;
+  if (properties && typeof properties === "object" && !Array.isArray(properties) && typeof data === "object" && !Array.isArray(data)) {
+    for (const [key, propSchema] of Object.entries(properties)) {
+      if (typeof propSchema !== "object" || propSchema === null) continue;
+      const val = (data as Record<string, unknown>)[key];
+      const propSchemaRecord = propSchema as Record<string, unknown>;
+
+      total++;
+      if (val === undefined) {
+        issues.push(`Missing property: ${key}`);
+        continue;
+      }
+
+      // Check property type
+      if (typeof propSchemaRecord.type === "string") {
+        const expectedType = propSchemaRecord.type;
+        const actualType = Array.isArray(val) ? "array" : typeof val;
+        if (actualType === expectedType) {
+          matched++;
+        } else {
+          issues.push(`Property "${key}" expected "${expectedType}", got "${actualType}"`);
+        }
+      } else {
+        matched++;
+      }
+    }
+  }
+
+  // If no checks were possible, give benefit of the doubt
+  if (total === 0) {
+    return {
+      score: 1.0,
+      passed: true,
+      rationale: "Valid JSON (no schema constraints to validate)",
+      evaluatorType: "json_schema",
+    };
+  }
+
+  const score = matched / total;
+  const rationale = issues.length > 0
+    ? `${matched}/${total} checks passed. Issues: ${issues.join("; ")}`
+    : `${matched}/${total} schema checks passed`;
+
+  return {
+    score,
+    passed: score >= threshold,
+    rationale,
+    evaluatorType: "json_schema",
+  };
 }
 
 function similarityScore(a: string, b: string): number {
   if (a === b) return 1;
   if (a.length === 0 || b.length === 0) return 0;
 
-  // Jaccard similarity on words
   const wordsA = new Set(a.split(/\s+/));
   const wordsB = new Set(b.split(/\s+/));
   const intersection = new Set([...wordsA].filter((w) => wordsB.has(w)));

@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { TestCase, TestResult, AgentEndpoint, EvaluatorConfig } from "@/lib/types";
 import { useSettings } from "@/lib/settings-context";
+import { isAsyncEvaluator } from "@/lib/evaluator";
 
 interface RunSimulationProps {
   cases: TestCase[];
@@ -43,21 +44,34 @@ export default function RunSimulation({
       defaultEvaluator: EvaluatorConfig | undefined,
       timeoutMs: number
     ): Promise<TestResult> => {
+      const evalConfig = tc.evaluator || defaultEvaluator;
+      const body: Record<string, unknown> = {
+        testCase: tc,
+        endpoint,
+        defaultEvaluator,
+        timeoutMs,
+      };
+
+      // If evaluator needs LLM judge and user has AI provider configured, pass it
+      if (evalConfig && isAsyncEvaluator(evalConfig.type)) {
+        const providerConfig = settings.apiKey && settings.model
+          ? { provider: settings.provider, apiKey: settings.apiKey, model: settings.model, baseUrl: settings.baseUrl }
+          : null;
+        if (providerConfig) {
+          body.judgeProvider = providerConfig;
+        }
+      }
+
       const res = await fetch("/api/execute", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          testCase: tc,
-          endpoint,
-          defaultEvaluator,
-          timeoutMs,
-        }),
+        body: JSON.stringify(body),
       });
 
       const data = await res.json();
       return data.result;
     },
-    []
+    [settings]
   );
 
   const simulateResult = useCallback((tc: TestCase, index: number): TestResult => {

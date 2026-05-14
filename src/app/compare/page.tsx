@@ -392,14 +392,14 @@ export default function ComparePage() {
           {
             label: "Latency",
             value: `${latencyDelta > 0 ? "+" : ""}${(latencyDelta / 1000).toFixed(1)}s`,
-            raw: -latencyDelta,
+            raw: latencyDelta,
             display: `${(baseline.summary.totalLatencyMs / 1000).toFixed(1)}s → ${(candidate.summary.totalLatencyMs / 1000).toFixed(1)}s`,
             invert: true,
           },
           {
             label: "Cost",
             value: `${costDelta > 0 ? "+" : ""}$${costDelta.toFixed(4)}`,
-            raw: -costDelta,
+            raw: costDelta,
             display: `$${baseline.summary.totalTokenCost.toFixed(4)} → $${candidate.summary.totalTokenCost.toFixed(4)}`,
             invert: true,
           },
