@@ -138,8 +138,16 @@ function containsMatch(
   const a = caseInsensitive ? actual.toLowerCase() : actual;
   const e = caseInsensitive ? expected.toLowerCase() : expected;
 
+  if (!e.trim()) {
+    return {
+      score: actual.trim() ? 0 : 1,
+      passed: !actual.trim() ? threshold <= 1 : false,
+      rationale: "No expected output defined",
+      evaluatorType: "contains",
+    };
+  }
+
   const phrases = e.split(/[\n;]/).map((s) => s.trim()).filter(Boolean);
-  if (phrases.length === 0) phrases.push(e);
 
   let matched = 0;
   for (const phrase of phrases) {

@@ -60,7 +60,19 @@ export async function POST(req: NextRequest) {
     );
 
     const parsed = JSON.parse(text);
-    return NextResponse.json(parsed, { status: 200 });
+
+    // Validate and fill missing fields to prevent UI crashes
+    const safeResponse = {
+      summary: typeof parsed.summary === "string" ? parsed.summary : DEMO_RESPONSE.summary,
+      regressionPatterns: Array.isArray(parsed.regressionPatterns) ? parsed.regressionPatterns : [],
+      suggestedFixes: Array.isArray(parsed.suggestedFixes) ? parsed.suggestedFixes : [],
+      riskAssessment:
+        parsed.riskAssessment === "low" || parsed.riskAssessment === "medium" || parsed.riskAssessment === "high"
+          ? parsed.riskAssessment
+          : "medium",
+    };
+
+    return NextResponse.json(safeResponse, { status: 200 });
   } catch (e) {
     const message = e instanceof Error ? e.message : "Failed to generate AI analysis";
     return NextResponse.json({ error: message }, { status: 500 });

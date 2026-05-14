@@ -510,8 +510,8 @@ export default function SettingsPage() {
               onClick={() =>
                 updateSettings({
                   defaultEvaluator: {
-                    ...settings.defaultEvaluator,
                     type: e.value,
+                    threshold: settings.defaultEvaluator?.threshold ?? 0.6,
                   },
                 })
               }
