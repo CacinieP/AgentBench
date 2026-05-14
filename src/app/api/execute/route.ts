@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { callAgent } from "@/lib/agent-adapter";
 import { evaluate, buildTestResult } from "@/lib/evaluator";
-import { TestCase, AgentEndpoint, EvaluatorConfig, AgentRunConfig } from "@/lib/types";
+import { TestCase, AgentEndpoint, EvaluatorConfig, EvaluatorType } from "@/lib/types";
 
 const DEFAULT_EVALUATOR: EvaluatorConfig = { type: "contains", threshold: 0.6 };
 const DEFAULT_TIMEOUT = 30000;
@@ -29,20 +29,12 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const config: Partial<AgentRunConfig> = {
-    endpoint,
-    defaultEvaluator: defaultEvaluator || DEFAULT_EVALUATOR,
-    timeoutMs: timeoutMs || DEFAULT_TIMEOUT,
-  };
+  const evaluatorConfig = testCase.evaluator || defaultEvaluator || DEFAULT_EVALUATOR;
+  const resolvedTimeout = timeoutMs || DEFAULT_TIMEOUT;
 
   try {
-    const agentResult = await callAgent(
-      config.endpoint!,
-      testCase.input,
-      config.timeoutMs!
-    );
+    const agentResult = await callAgent(endpoint, testCase.input, resolvedTimeout);
 
-    const evaluatorConfig = testCase.evaluator || config.defaultEvaluator || DEFAULT_EVALUATOR;
     const evalOutput = evaluate(
       agentResult.output,
       testCase.expectedOutput,
@@ -60,12 +52,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ result });
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Unknown error";
+    const evalType: EvaluatorType = evaluatorConfig.type;
 
-    // Build a failed result even on error
     const result = buildTestResult(
       testCase.id,
       "",
-      { score: 0, passed: false, rationale: "Agent call failed", evaluatorType: (testCase.evaluator?.type || config.defaultEvaluator?.type || "contains") as import("@/lib/types").EvaluatorType },
+      { score: 0, passed: false, rationale: "Agent call failed", evaluatorType: evalType },
       0,
       0,
       msg

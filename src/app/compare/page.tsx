@@ -556,7 +556,9 @@ export default function ComparePage() {
                     </span>
                   </td>
                   <td className="px-5 py-3">
-                    {br.passed !== cr?.passed && Math.abs(delta) < 0.15 ? (
+                    {!cr ? (
+                      <StatusBadge status="warning" label="Missing" />
+                    ) : br.passed !== cr.passed && Math.abs(delta) < 0.15 ? (
                       <StatusBadge status="warning" label="Flaky" />
                     ) : delta < -0.05 ? (
                       <StatusBadge status="fail" label="Regression" />

@@ -424,10 +424,9 @@ export default function SettingsPage() {
             onChange={(e) =>
               updateSettings({
                 agentEndpoint: {
+                  ...settings.agentEndpoint,
                   type: settings.agentEndpoint?.type || "openai_chat",
                   url: e.target.value,
-                  apiKey: settings.agentEndpoint?.apiKey,
-                  model: settings.agentEndpoint?.model,
                 },
               })
             }
@@ -457,7 +456,6 @@ export default function SettingsPage() {
                   type: settings.agentEndpoint?.type || "openai_chat",
                   url: settings.agentEndpoint?.url || "",
                   apiKey: e.target.value,
-                  model: settings.agentEndpoint?.model,
                 },
               })
             }
@@ -480,7 +478,6 @@ export default function SettingsPage() {
                   ...settings.agentEndpoint,
                   type: settings.agentEndpoint?.type || "openai_chat",
                   url: settings.agentEndpoint?.url || "",
-                  apiKey: settings.agentEndpoint?.apiKey,
                   model: e.target.value,
                 },
               })

@@ -126,13 +126,11 @@ async function callCustomHTTP(
   input: string,
   signal: AbortSignal
 ): Promise<string> {
-  const body = endpoint.responsePath
-    ? { input, prompt: input }
-    : {
-        model: endpoint.model || "default",
-        messages: [{ role: "user", content: input }],
-        max_tokens: 2048,
-      };
+  const body = {
+    model: endpoint.model || "default",
+    messages: [{ role: "user", content: input }],
+    max_tokens: 2048,
+  };
 
   const res = await fetch(endpoint.url, {
     method: "POST",

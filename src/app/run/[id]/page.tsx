@@ -120,7 +120,7 @@ export default function RunDetailPage() {
             <span className="text-xs font-mono px-2 py-0.5 rounded bg-[var(--accent-bg)] text-[var(--accent-light)]">
               {run.agentVersion}
             </span>
-            {run.modelVersion === "live" ? (
+            {!run.agentVersion.startsWith("sim-") ? (
               <span className="text-[10px] px-2 py-0.5 rounded-full bg-[var(--green-bg)] text-[var(--green)]">
                 LIVE
               </span>
