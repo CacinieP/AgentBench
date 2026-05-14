@@ -222,8 +222,19 @@ export default function ComparePage() {
     );
   }
 
+  const sameSuite = baseline && candidate && baseline.suiteId === candidate.suiteId;
+
   return (
     <div className="p-8 max-w-[1200px] mx-auto">
+      {!sameSuite && baseline && candidate && (
+        <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-[var(--yellow-bg)] text-[var(--yellow)] text-xs mb-6">
+          <AlertTriangle size={14} />
+          <span>
+            These runs are from different suites ({baseline.suiteName} vs {candidate.suiteName}).
+            Test case IDs may not overlap — comparison may show limited results.
+          </span>
+        </div>
+      )}
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-bold mb-1">Compare Runs</h1>

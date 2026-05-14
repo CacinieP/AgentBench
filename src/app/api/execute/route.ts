@@ -55,6 +55,14 @@ export async function POST(request: NextRequest) {
         evaluatorConfig,
         judgeFn
       );
+    } else if (evaluatorConfig.type === "llm_judge") {
+      // llm_judge requested but no AI provider configured — fallback with warning
+      const fallback = evaluate(agentResult.output, testCase.expectedOutput, { ...evaluatorConfig, type: "contains" });
+      evalOutput = {
+        ...fallback,
+        rationale: `[No AI provider for LLM Judge — used contains instead] ${fallback.rationale}`,
+        evaluatorType: "llm_judge" as EvaluatorType,
+      };
     } else {
       // Sync evaluators
       evalOutput = evaluate(

@@ -384,7 +384,7 @@ export default function RunDetailPage() {
                     <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider mb-1">
                       Input
                     </p>
-                    <p className="text-xs text-[var(--text-secondary)] bg-[var(--bg-secondary)] p-3 rounded-lg leading-relaxed">
+                    <p className="text-xs text-[var(--text-secondary)] bg-[var(--bg-secondary)] p-3 rounded-lg leading-relaxed max-h-40 overflow-y-auto whitespace-pre-wrap">
                       {tc?.input || "N/A"}
                     </p>
                   </div>
@@ -392,7 +392,7 @@ export default function RunDetailPage() {
                     <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider mb-1">
                       Expected
                     </p>
-                    <p className="text-xs text-[var(--text-secondary)] bg-[var(--bg-secondary)] p-3 rounded-lg leading-relaxed">
+                    <p className="text-xs text-[var(--text-secondary)] bg-[var(--bg-secondary)] p-3 rounded-lg leading-relaxed max-h-40 overflow-y-auto whitespace-pre-wrap">
                       {tc?.expectedOutput || "N/A"}
                     </p>
                   </div>
@@ -401,7 +401,7 @@ export default function RunDetailPage() {
                       Actual Output
                     </p>
                     <p
-                      className="text-xs p-3 rounded-lg leading-relaxed whitespace-pre-wrap"
+                      className="text-xs p-3 rounded-lg leading-relaxed whitespace-pre-wrap max-h-60 overflow-y-auto"
                       style={{
                         backgroundColor: result.passed
                           ? "var(--green-bg)"
@@ -411,7 +411,7 @@ export default function RunDetailPage() {
                           : "var(--red)",
                       }}
                     >
-                      {result.actualOutput}
+                      {result.actualOutput || "(No output — agent call failed)"}
                     </p>
                   </div>
                   {result.error && (

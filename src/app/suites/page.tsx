@@ -52,6 +52,10 @@ export default function SuitesPage() {
       }
 
       const total = results.length;
+      if (total === 0) {
+        setSimulatingSuite(null);
+        return;
+      }
       const passed = results.filter((r) => r.passed).length;
       const avgScore = results.reduce((s, r) => s + r.score, 0) / total;
 

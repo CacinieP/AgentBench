@@ -30,8 +30,8 @@ export default function RunSimulation({
   const [results, setResults] = useState<TestResult[]>([]);
   const [phase, setPhase] = useState<"idle" | "running" | "done">("idle");
   const [runningIdx, setRunningIdx] = useState(-1);
-  const [error, setError] = useState<string | null>(null);
   const abortRef = useRef(false);
+  const runningRef = useRef(false);
   const accRef = useRef<TestResult[]>([]);
 
   const hasAgentEndpoint = !!(settings.agentEndpoint?.url);
@@ -52,7 +52,6 @@ export default function RunSimulation({
         timeoutMs,
       };
 
-      // If evaluator needs LLM judge and user has AI provider configured, pass it
       if (evalConfig && isAsyncEvaluator(evalConfig.type)) {
         const providerConfig = settings.apiKey && settings.model
           ? { provider: settings.provider, apiKey: settings.apiKey, model: settings.model, baseUrl: settings.baseUrl }
@@ -93,64 +92,72 @@ export default function RunSimulation({
   }, []);
 
   const startRun = useCallback(async () => {
+    // BUG #1 fix: re-entry guard
+    if (runningRef.current) return;
+    runningRef.current = true;
+
     abortRef.current = false;
     accRef.current = [];
     setResults([]);
     setRunningIdx(0);
     setPhase("running");
-    setError(null);
 
-    if (mode === "real") {
-      // Execute test cases sequentially against real agent
-      for (let i = 0; i < cases.length; i++) {
-        if (abortRef.current) break;
+    try {
+      if (mode === "real") {
+        for (let i = 0; i < cases.length; i++) {
+          if (abortRef.current) break;
 
-        setRunningIdx(i);
-        try {
-          const result = await executeRealCase(
-            cases[i],
-            settings.agentEndpoint!,
-            settings.defaultEvaluator,
-            settings.runTimeoutMs || 30000
-          );
-          accRef.current = [...accRef.current, result];
-          setResults([...accRef.current]);
-        } catch (e) {
-          const result: TestResult = {
-            testCaseId: cases[i].id,
-            actualOutput: "",
-            passed: false,
-            score: 0,
-            latencyMs: 0,
-            tokenCost: 0,
-            error: e instanceof Error ? e.message : "Execution failed",
-          };
-          accRef.current = [...accRef.current, result];
-          setResults([...accRef.current]);
+          setRunningIdx(i);
+          try {
+            const result = await executeRealCase(
+              cases[i],
+              settings.agentEndpoint!,
+              settings.defaultEvaluator,
+              settings.runTimeoutMs || 30000
+            );
+            if (abortRef.current) break;
+            accRef.current = [...accRef.current, result];
+            setResults([...accRef.current]);
+          } catch (e) {
+            if (abortRef.current) break;
+            const result: TestResult = {
+              testCaseId: cases[i].id,
+              actualOutput: "",
+              passed: false,
+              score: 0,
+              latencyMs: 0,
+              tokenCost: 0,
+              error: e instanceof Error ? e.message : "Execution failed",
+            };
+            accRef.current = [...accRef.current, result];
+            setResults([...accRef.current]);
+          }
+          setRunningIdx(i + 1);
         }
-        setRunningIdx(i + 1);
+      } else {
+        for (let i = 0; i < cases.length; i++) {
+          if (abortRef.current) break;
+
+          setRunningIdx(i);
+          await sleep(500 + Math.random() * 400);
+          if (abortRef.current) break;
+
+          const result = simulateResult(cases[i], i);
+          accRef.current = [...accRef.current, result];
+          setResults([...accRef.current]);
+          setRunningIdx(i + 1);
+        }
       }
-    } else {
-      // Simulation mode — animated sequential with fake timing
-      for (let i = 0; i < cases.length; i++) {
-        if (abortRef.current) break;
 
-        setRunningIdx(i);
-        await sleep(500 + Math.random() * 400);
-        if (abortRef.current) break;
-
-        const result = simulateResult(cases[i], i);
-        accRef.current = [...accRef.current, result];
-        setResults([...accRef.current]);
-        setRunningIdx(i + 1);
+      // BUG #2 fix: check abort AFTER the loop completes
+      if (!abortRef.current) {
+        const final = accRef.current;
+        setResults(final);
+        setPhase("done");
+        onComplete(final);
       }
-    }
-
-    if (!abortRef.current) {
-      const final = accRef.current;
-      setResults(final);
-      setPhase("done");
-      onComplete(final);
+    } finally {
+      runningRef.current = false;
     }
   }, [cases, onComplete, mode, settings, executeRealCase, simulateResult]);
 
@@ -159,7 +166,7 @@ export default function RunSimulation({
     onCancel();
   }, [onCancel]);
 
-  // Cleanup on unmount
+  // BUG #3 fix: cleanup abort on unmount
   useEffect(() => {
     return () => {
       abortRef.current = true;

@@ -88,14 +88,18 @@ Scoring guide:
 }
 
 function parseJudgeResponse(text: string): { score: number; rationale: string } {
-  // Try to extract JSON from the response
-  const jsonMatch = text.match(/\{[\s\S]*\}/);
-  if (!jsonMatch) {
+  // Find JSON between first { and last } to handle braces in rationale text
+  const firstBrace = text.indexOf("{");
+  if (firstBrace === -1) {
     return { score: 0.5, rationale: "Could not parse LLM judge response" };
   }
-
+  const lastBrace = text.lastIndexOf("}");
+  if (lastBrace === -1 || lastBrace <= firstBrace) {
+    return { score: 0.5, rationale: "Could not parse LLM judge response" };
+  }
+  const candidate = text.slice(firstBrace, lastBrace + 1);
   try {
-    const parsed = JSON.parse(jsonMatch[0]);
+    const parsed = JSON.parse(candidate);
     const score = typeof parsed.score === "number"
       ? Math.max(0, Math.min(1, parsed.score))
       : 0.5;

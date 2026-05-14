@@ -13,6 +13,10 @@ export async function callAgent(
   input: string,
   timeoutMs: number
 ): Promise<AgentCallResult> {
+  if (!endpoint.url) {
+    throw new Error("Agent endpoint URL is not configured. Go to Settings and set an endpoint URL.");
+  }
+
   const start = performance.now();
 
   const controller = new AbortController();
