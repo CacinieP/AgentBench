@@ -7,29 +7,21 @@
 
 > ⚠️ **Naming Notice**: This project is **not affiliated** with [THUDM/AgentBench](https://github.com/THUDM/AgentBench), the academic benchmark for evaluating LLM-as-Agent capabilities from Tsinghua University. The name collision is unintentional. If you are looking for the research benchmark (OS, Database, Knowledge Graph, WebShop, etc.), please visit the [THUDM repository](https://github.com/THUDM/AgentBench). This repo is an independent **EvalOps dashboard** for teams to regression-test their own AI agents.
 
-## What It Does
+## Features
 
-AgentBench is an EvalOps platform that helps teams ship reliable AI agents by providing:
-
-- **Test Suite Management** — Define test cases with inputs and expected outputs for your AI agents
+- **Test Suite Management** — Create custom test suites with inputs and expected outputs for your AI agents
 - **Regression Testing** — Run evaluations and track quality across agent versions
 - **Version Comparison** — Side-by-side diff between runs to catch regressions before deployment
-- **AI-Powered Analysis** — Claude analyzes failures and suggests fixes
-
-## Why This Project?
-
-This project was selected from 45+ daily opportunity reports as the most validated hackathon idea:
-
-1. **EvalOps/Agent regression testing** appeared **12+ times** across 46 days of opportunity analysis — the single most recurring theme
-2. It perfectly embodies "AI coding as both means and product": we use AI (Claude Code) to build a platform that tests AI agents
-3. The "testing AI with AI" paradigm is both technically interesting and commercially relevant as agents enter production
+- **AI-Powered Analysis** — Multi-provider AI analyzes failures and suggests fixes
+- **Multi-Provider Support** — Works with Anthropic, OpenAI, and any OpenAI-compatible API (DeepSeek, Mistral, Groq, Together, OpenRouter, SiliconFlow, etc.)
+- **Local-First** — All data stored in browser localStorage, no backend database required
 
 ## Tech Stack
 
 - **Next.js 16** (App Router, Turbopack)
 - **React 19** + TypeScript
 - **Tailwind CSS 4** — Dark theme dashboard UI
-- **Claude API** — AI-powered analysis of test failures
+- **Multi-Provider AI** — Anthropic / OpenAI / OpenAI-compatible APIs
 
 ## Getting Started
 
@@ -40,70 +32,89 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) to see the dashboard.
 
-### With Claude API (optional)
+Sample data (3 test suites, 4 runs) is loaded automatically on first visit.
 
-Set your Anthropic API key for AI-powered analysis:
+### AI Provider Setup
 
-```bash
-ANTHROPIC_API_KEY=sk-ant-... npm run dev
-```
+Go to **Settings** (`/settings`) to configure an AI provider for analysis features:
 
-Without the API key, the app uses built-in demo analysis.
+| Provider | Models | Notes |
+|----------|--------|-------|
+| **Anthropic** | Claude Sonnet, Opus, Haiku | Native Messages API |
+| **OpenAI** | GPT-4o, GPT-4.1, o4-mini | Chat Completions API |
+| **Custom** | Any model | DeepSeek, Mistral, Groq, Together, OpenRouter, SiliconFlow, etc. |
+
+Without an API key, AI analysis falls back to a built-in demo response.
 
 ## Pages
 
 | Route | Description |
 |-------|-------------|
-| `/` | Dashboard with metrics, test suites overview, and recent runs |
-| `/suites` | Test suite management with expandable test case details |
+| `/` | Dashboard with metrics, suite overview, score trend, and recent runs |
+| `/suites` | Test suite management — create, expand, and run test suites |
 | `/compare` | Side-by-side regression analysis between two agent versions |
 | `/run/[id]` | Detailed test run results with expandable case analysis |
+| `/settings` | AI provider configuration and data management |
 
 ## Architecture
 
 ```
 src/
 ├── app/
-│   ├── page.tsx          # Dashboard
-│   ├── layout.tsx        # Root layout with sidebar
-│   ├── globals.css       # Dark theme styles
-│   ├── suites/page.tsx   # Test suite management
-│   ├── compare/page.tsx  # Version comparison
-│   ├── run/[id]/page.tsx # Run detail view
-│   └── api/analyze/route.ts  # Claude API integration
+│   ├── page.tsx              # Dashboard
+│   ├── layout.tsx            # Root layout (SettingsProvider + DataProvider)
+│   ├── globals.css           # Dark theme (CSS custom properties)
+│   ├── settings/page.tsx     # AI provider config + data management
+│   ├── suites/page.tsx       # Test suite CRUD + run simulation
+│   ├── compare/page.tsx      # Version comparison with AI analysis
+│   ├── run/[id]/page.tsx     # Run detail with expandable results
+│   └── api/analyze/route.ts  # Multi-provider AI analysis endpoint
 ├── components/
-│   ├── Sidebar.tsx       # Navigation sidebar
-│   ├── StatusBadge.tsx   # Pass/fail/warning badges
-│   └── MetricCard.tsx    # Dashboard metric cards
+│   ├── CreateSuiteModal.tsx  # New suite creation form
+│   ├── MetricCard.tsx        # Dashboard metric cards
+│   ├── RunSimulation.tsx     # Animated test execution
+│   ├── ScoreRing.tsx         # SVG donut score chart
+│   ├── Sidebar.tsx           # Navigation + recent runs
+│   └── StatusBadge.tsx       # Pass/fail/warning badges
 └── lib/
-    ├── types.ts          # TypeScript type definitions
-    └── demo-data.ts      # Demo data with 3 test suites and runs
+    ├── ai-provider.ts        # Multi-provider AI abstraction (fetch)
+    ├── data-context.tsx       # localStorage data store (suites + runs)
+    ├── demo-data.ts           # AI analysis fallback data
+    ├── seed-data.ts           # Sample data for first load
+    ├── settings-context.tsx   # AI provider settings (localStorage)
+    ├── types.ts               # TypeScript interfaces
+    └── utils.ts               # Formatting helpers
 ```
+
+## Data Flow
+
+- **Suites & Runs** → stored in `localStorage` via `useSyncExternalStore` (reactive context)
+- **AI Settings** → stored in `localStorage` separately from test data
+- **Sample Data** → auto-seeded on first visit; clearable via Settings page
+- **AI Analysis** → client sends provider config to `/api/analyze`; server calls the configured API
+
+## Why This Project?
+
+This project was selected from 45+ daily opportunity reports as the most validated hackathon idea:
+
+1. **EvalOps/Agent regression testing** appeared **12+ times** across 46 days of opportunity analysis
+2. It embodies "AI coding as both means and product": using AI (Claude Code) to build a platform that tests AI agents
+3. The "testing AI with AI" paradigm is both technically interesting and commercially relevant
 
 ## FAQ
 
 ### Is this the same AgentBench from Tsinghua University (THUDM)?
 
-**No.** This is an independent project created during a hackathon. The name collision is unintentional.
+**No.** This is an independent hackathon project. The name collision is unintentional.
 
 | | THUDM/AgentBench | This Project |
 |---|---|---|
-| **Purpose** | Academic benchmark to compare LLMs as agents | EvalOps dashboard for teams to regression-test their own agents |
-| **Target User** | AI researchers & model developers | Engineering teams & product managers |
-| **What it tests** | 8 generic environments (OS, DB, WebShop, etc.) | Your own agent's test suites (support, code review, extraction, etc.) |
-| **Output** | Leaderboard & research paper data | Regression reports & quality trends |
-| **Stack** | Python + Docker + conda | Next.js + React + TypeScript |
-
-If you need the academic benchmark, go to [github.com/THUDM/AgentBench](https://github.com/THUDM/AgentBench).
+| **Purpose** | Academic benchmark to compare LLMs | EvalOps dashboard for regression-testing your own agents |
+| **Target User** | AI researchers | Engineering teams & product managers |
+| **What it tests** | 8 generic environments | Your own agent's test suites |
+| **Output** | Leaderboard & research data | Regression reports & quality trends |
+| **Stack** | Python + Docker | Next.js + React + TypeScript |
 
 ## License
 
 MIT — see [LICENSE](./LICENSE).
-
-## Hackathon Pitch
-
-**The Problem:** Teams deploying AI agents have no reliable way to detect quality regressions when they change prompts, models, or tools. A single prompt tweak can silently break downstream behavior.
-
-**The Solution:** AgentBench provides a CI-friendly regression testing framework for AI agents — define golden test cases, run evaluations on every change, and catch regressions before they reach production.
-
-**The Meta:** This entire project was built by an AI (Claude Code) in a single session, testing the very premise that AI coding can produce production-quality developer tools.
