@@ -4,6 +4,18 @@ export interface TestCase {
   input: string;
   expectedOutput: string;
   category: string;
+  evaluator?: EvaluatorConfig;
+}
+
+export type EvaluatorType = "exact_match" | "contains" | "regex" | "json_schema" | "llm_judge";
+
+export interface EvaluatorConfig {
+  type: EvaluatorType;
+  threshold?: number; // 0-1, minimum score to pass
+  caseInsensitive?: boolean; // for exact_match / contains
+  pattern?: string; // for regex
+  schema?: Record<string, unknown>; // for json_schema
+  judgePrompt?: string; // for llm_judge
 }
 
 export interface TestResult {
@@ -14,6 +26,8 @@ export interface TestResult {
   latencyMs: number;
   tokenCost: number;
   error?: string;
+  judgeRationale?: string;
+  evaluatorType?: EvaluatorType;
 }
 
 export interface TestRun {
@@ -77,4 +91,24 @@ export interface AIAnalysis {
   regressionPatterns: string[];
   suggestedFixes: string[];
   riskAssessment: "low" | "medium" | "high";
+}
+
+export type AgentEndpointType = "openai_chat" | "anthropic_messages" | "custom_http";
+
+export interface AgentEndpoint {
+  type: AgentEndpointType;
+  url: string;
+  apiKey?: string;
+  model?: string;
+  headers?: Record<string, string>;
+  /** JSON path to extract text from response, e.g. "choices.0.message.content" */
+  responsePath?: string;
+}
+
+export interface AgentRunConfig {
+  endpoint: AgentEndpoint;
+  /** Default evaluator config if TestCase.evaluator is not set */
+  defaultEvaluator: EvaluatorConfig;
+  /** Max wait time per test case in ms */
+  timeoutMs: number;
 }

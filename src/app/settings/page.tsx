@@ -13,6 +13,7 @@ import {
   Zap,
   RotateCcw,
   Trash2,
+  Shield,
 } from "lucide-react";
 import { useSettings } from "@/lib/settings-context";
 import { useData } from "@/lib/data-context";
@@ -351,6 +352,215 @@ export default function SettingsPage() {
             Successfully connected to {currentProvider?.label} ({settings.model})
           </p>
         )}
+      </div>
+
+      {/* Agent Endpoint Configuration */}
+      <div className="glass-card p-5 mb-4">
+        <div className="flex items-center gap-2 mb-3">
+          <Cpu size={14} className="text-[var(--accent-light)]" />
+          <span className="text-sm font-semibold">Agent Endpoint</span>
+          {settings.agentEndpoint?.url ? (
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-[var(--green-bg)] text-[var(--green)]">
+              CONFIGURED
+            </span>
+          ) : (
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-[var(--yellow-bg)] text-[var(--yellow)]">
+              SIMULATION MODE
+            </span>
+          )}
+        </div>
+        <p className="text-xs text-[var(--text-muted)] mb-3">
+          Configure the AI agent endpoint to test against. Without this, runs use simulated results.
+        </p>
+
+        {/* Endpoint type selector */}
+        <div className="grid grid-cols-3 gap-2 mb-3">
+          {([
+            { value: "openai_chat", label: "OpenAI Chat", desc: "/v1/chat/completions" },
+            { value: "anthropic_messages", label: "Anthropic", desc: "/v1/messages" },
+            { value: "custom_http", label: "Custom HTTP", desc: "Any POST endpoint" },
+          ] as const).map((t) => (
+            <button
+              key={t.value}
+              onClick={() =>
+                updateSettings({
+                  agentEndpoint: {
+                    ...settings.agentEndpoint,
+                    type: t.value,
+                    url: settings.agentEndpoint?.url || "",
+                  },
+                })
+              }
+              className={`p-2.5 rounded-lg border text-left transition-all ${
+                settings.agentEndpoint?.type === t.value
+                  ? "border-[var(--accent)] bg-[var(--accent-bg)]"
+                  : "border-[var(--border)] hover:border-[var(--border-light)]"
+              }`}
+            >
+              <p
+                className={`text-xs font-medium ${
+                  settings.agentEndpoint?.type === t.value
+                    ? "text-[var(--accent-light)]"
+                    : "text-[var(--text-primary)]"
+                }`}
+              >
+                {t.label}
+              </p>
+              <p className="text-[10px] text-[var(--text-muted)] mt-0.5">
+                {t.desc}
+              </p>
+            </button>
+          ))}
+        </div>
+
+        {/* Endpoint URL */}
+        <div className="mb-3">
+          <label className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider mb-1 block">
+            Endpoint URL
+          </label>
+          <input
+            type="text"
+            value={settings.agentEndpoint?.url || ""}
+            onChange={(e) =>
+              updateSettings({
+                agentEndpoint: {
+                  type: settings.agentEndpoint?.type || "openai_chat",
+                  url: e.target.value,
+                  apiKey: settings.agentEndpoint?.apiKey,
+                  model: settings.agentEndpoint?.model,
+                },
+              })
+            }
+            placeholder={
+              settings.agentEndpoint?.type === "anthropic_messages"
+                ? "https://api.anthropic.com/v1/messages"
+                : settings.agentEndpoint?.type === "openai_chat"
+                  ? "https://api.openai.com/v1/chat/completions"
+                  : "https://your-agent.example.com/chat"
+            }
+            className="w-full bg-[var(--bg-secondary)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--accent)] transition-colors"
+          />
+        </div>
+
+        {/* Agent API Key */}
+        <div className="mb-3">
+          <label className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider mb-1 block">
+            Agent API Key (optional)
+          </label>
+          <input
+            type="password"
+            value={settings.agentEndpoint?.apiKey || ""}
+            onChange={(e) =>
+              updateSettings({
+                agentEndpoint: {
+                  ...settings.agentEndpoint,
+                  type: settings.agentEndpoint?.type || "openai_chat",
+                  url: settings.agentEndpoint?.url || "",
+                  apiKey: e.target.value,
+                  model: settings.agentEndpoint?.model,
+                },
+              })
+            }
+            placeholder="Leave empty if endpoint doesn't require auth"
+            className="w-full bg-[var(--bg-secondary)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--accent)] transition-colors"
+          />
+        </div>
+
+        {/* Model */}
+        <div className="mb-3">
+          <label className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider mb-1 block">
+            Model (optional)
+          </label>
+          <input
+            type="text"
+            value={settings.agentEndpoint?.model || ""}
+            onChange={(e) =>
+              updateSettings({
+                agentEndpoint: {
+                  ...settings.agentEndpoint,
+                  type: settings.agentEndpoint?.type || "openai_chat",
+                  url: settings.agentEndpoint?.url || "",
+                  apiKey: settings.agentEndpoint?.apiKey,
+                  model: e.target.value,
+                },
+              })
+            }
+            placeholder="e.g. gpt-4o, claude-sonnet-4-6, my-custom-model"
+            className="w-full bg-[var(--bg-secondary)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--accent)] transition-colors"
+          />
+        </div>
+      </div>
+
+      {/* Evaluator Configuration */}
+      <div className="glass-card p-5 mb-4">
+        <div className="flex items-center gap-2 mb-3">
+          <Shield size={14} className="text-[var(--accent-light)]" />
+          <span className="text-sm font-semibold">Default Evaluator</span>
+        </div>
+        <p className="text-xs text-[var(--text-muted)] mb-3">
+          How agent responses are scored against expected output. Can be overridden per test case.
+        </p>
+        <div className="grid grid-cols-3 gap-2 mb-3">
+          {([
+            { value: "contains", label: "Contains", desc: "Checks key phrases" },
+            { value: "exact_match", label: "Exact Match", desc: "Requires full match" },
+            { value: "regex", label: "Regex", desc: "Pattern matching" },
+          ] as const).map((e) => (
+            <button
+              key={e.value}
+              onClick={() =>
+                updateSettings({
+                  defaultEvaluator: {
+                    ...settings.defaultEvaluator,
+                    type: e.value,
+                  },
+                })
+              }
+              className={`p-2.5 rounded-lg border text-left transition-all ${
+                (settings.defaultEvaluator?.type || "contains") === e.value
+                  ? "border-[var(--accent)] bg-[var(--accent-bg)]"
+                  : "border-[var(--border)] hover:border-[var(--border-light)]"
+              }`}
+            >
+              <p
+                className={`text-xs font-medium ${
+                  (settings.defaultEvaluator?.type || "contains") === e.value
+                    ? "text-[var(--accent-light)]"
+                    : "text-[var(--text-primary)]"
+                }`}
+              >
+                {e.label}
+              </p>
+              <p className="text-[10px] text-[var(--text-muted)] mt-0.5">{e.desc}</p>
+            </button>
+          ))}
+        </div>
+        <div>
+          <label className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider mb-1 block">
+            Pass Threshold: {(settings.defaultEvaluator?.threshold ?? 0.6).toFixed(1)}
+          </label>
+          <input
+            type="range"
+            min="0.1"
+            max="1.0"
+            step="0.1"
+            value={settings.defaultEvaluator?.threshold ?? 0.6}
+            onChange={(e) =>
+              updateSettings({
+                defaultEvaluator: {
+                  ...settings.defaultEvaluator,
+                  type: settings.defaultEvaluator?.type || "contains",
+                  threshold: parseFloat(e.target.value),
+                },
+              })
+            }
+            className="w-full accent-[var(--accent)]"
+          />
+          <div className="flex justify-between text-[10px] text-[var(--text-muted)]">
+            <span>Lenient (0.1)</span>
+            <span>Strict (1.0)</span>
+          </div>
+        </div>
       </div>
 
       {/* Data Management */}

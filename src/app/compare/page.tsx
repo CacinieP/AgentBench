@@ -88,13 +88,15 @@ export default function ComparePage() {
       ? candidate.summary.totalTokenCost - baseline.summary.totalTokenCost
       : 0;
 
-  const { regressions, improvements } = useMemo(() => {
-    if (!baseline || !candidate) return { regressions: [], improvements: [] };
+  const { regressions, improvements, flakes } = useMemo(() => {
+    if (!baseline || !candidate) return { regressions: [], improvements: [], flakes: [] };
 
     const regs: { name: string; baseline: number; candidate: number }[] = [];
     const imps: { name: string; baseline: number; candidate: number }[] = [];
+    const flks: { name: string; baseline: boolean; candidate: boolean }[] = [];
 
     const baselineSuite = suites.find((s) => s.id === baseline.suiteId);
+    const candidateSuite = suites.find((s) => s.id === candidate.suiteId);
 
     baseline.results.forEach((br) => {
       const cr = candidate.results.find(
@@ -102,9 +104,12 @@ export default function ComparePage() {
       );
       if (cr) {
         const delta = cr.score - br.score;
-        const tc = baselineSuite?.cases.find((c) => c.id === br.testCaseId);
+        const tc = baselineSuite?.cases.find((c) => c.id === br.testCaseId)
+          || candidateSuite?.cases.find((c) => c.id === br.testCaseId);
         const tcName = tc?.name || br.testCaseId;
-        if (delta < -0.05) {
+        if (br.passed !== cr.passed && Math.abs(delta) < 0.15) {
+          flks.push({ name: tcName, baseline: br.passed, candidate: cr.passed });
+        } else if (delta < -0.05) {
           regs.push({ name: tcName, baseline: br.score, candidate: cr.score });
         } else if (delta > 0.05) {
           imps.push({ name: tcName, baseline: br.score, candidate: cr.score });
@@ -112,7 +117,7 @@ export default function ComparePage() {
       }
     });
 
-    return { regressions: regs, improvements: imps };
+    return { regressions: regs, improvements: imps, flakes: flks };
   }, [baseline, candidate, suites]);
 
   const fetchAnalysis = useCallback(async () => {
@@ -171,11 +176,11 @@ export default function ComparePage() {
 
   // Resolve test case name from suite data
   const getTestCaseName = (testCaseId: string) => {
-    const suite = suites.find(
-      (s) => s.id === baseline?.suiteId || s.id === candidate?.suiteId
-    );
-    const tc = suite?.cases.find((c) => c.id === testCaseId);
-    return tc?.name || testCaseId;
+    for (const s of suites) {
+      const tc = s.cases.find((c) => c.id === testCaseId);
+      if (tc) return tc.name;
+    }
+    return testCaseId;
   };
 
   if (runs.length < 2) {
@@ -551,7 +556,9 @@ export default function ComparePage() {
                     </span>
                   </td>
                   <td className="px-5 py-3">
-                    {delta < -0.05 ? (
+                    {br.passed !== cr?.passed && Math.abs(delta) < 0.15 ? (
+                      <StatusBadge status="warning" label="Flaky" />
+                    ) : delta < -0.05 ? (
                       <StatusBadge status="fail" label="Regression" />
                     ) : delta > 0.05 ? (
                       <StatusBadge status="pass" label="Improved" />
@@ -566,8 +573,8 @@ export default function ComparePage() {
         </table>
       </div>
 
-      {/* Improvements & Regressions */}
-      <div className="grid grid-cols-2 gap-4 mb-6">
+      {/* Improvements & Regressions & Flakes */}
+      <div className="grid grid-cols-3 gap-4 mb-6">
         <div className="glass-card p-5">
           <div className="flex items-center gap-2 mb-3">
             <CheckCircle2 size={14} style={{ color: "var(--green)" }} />
@@ -622,6 +629,35 @@ export default function ComparePage() {
                   <span style={{ color: "var(--red)" }}>
                     <TrendingDown size={10} className="inline mr-1" />
                     {(reg.candidate - reg.baseline).toFixed(2)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+        <div className="glass-card p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <AlertTriangle size={14} style={{ color: "var(--yellow)" }} />
+            <h3 className="text-sm font-semibold">
+              Flaky ({flakes.length})
+            </h3>
+          </div>
+          {flakes.length === 0 ? (
+            <p className="text-xs text-[var(--text-muted)]">
+              No flaky tests detected
+            </p>
+          ) : (
+            <div className="space-y-2">
+              {flakes.map((flk, i) => (
+                <div
+                  key={i}
+                  className="flex items-center justify-between text-xs"
+                >
+                  <span className="text-[var(--text-secondary)]">
+                    {flk.name}
+                  </span>
+                  <span style={{ color: "var(--yellow)" }}>
+                    {flk.baseline ? "pass" : "fail"} → {flk.candidate ? "pass" : "fail"}
                   </span>
                 </div>
               ))}

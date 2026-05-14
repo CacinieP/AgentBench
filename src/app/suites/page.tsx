@@ -72,8 +72,12 @@ export default function SuitesPage() {
               results.reduce((s, r) => s + r.tokenCost, 0) * 10000
             ) / 10000,
         },
-        agentVersion: `sim-${Date.now().toString(36)}`,
-        modelVersion: "simulation",
+        agentVersion: results[0]?.evaluatorType
+          ? `run-${Date.now().toString(36)}`
+          : `sim-${Date.now().toString(36)}`,
+        modelVersion: results[0]?.evaluatorType
+          ? "live"
+          : "simulation",
       };
 
       addRun(run);

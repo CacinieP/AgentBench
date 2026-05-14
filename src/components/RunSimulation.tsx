@@ -1,14 +1,16 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import {
   CheckCircle2,
   XCircle,
   Loader2,
   Clock,
   DollarSign,
+  AlertTriangle,
 } from "lucide-react";
-import { TestCase, TestResult } from "@/lib/types";
+import { TestCase, TestResult, AgentEndpoint, EvaluatorConfig } from "@/lib/types";
+import { useSettings } from "@/lib/settings-context";
 
 interface RunSimulationProps {
   cases: TestCase[];
@@ -16,66 +18,139 @@ interface RunSimulationProps {
   onCancel: () => void;
 }
 
-function simulateResult(tc: TestCase, index: number): TestResult {
-  const seed = hashCode(tc.id + index);
-  const score = 0.4 + (Math.abs(seed) % 600) / 1000;
-  const passed = score >= 0.6;
-
-  return {
-    testCaseId: tc.id,
-    actualOutput: passed
-      ? `[Simulated] Acceptable response for: ${tc.name}`
-      : `[Simulated] Response missing required elements for: ${tc.name}`,
-    passed,
-    score: Math.min(score, 0.99),
-    latencyMs: 600 + (Math.abs(seed) % 1800),
-    tokenCost: 0.001 + (Math.abs(seed) % 50) / 10000,
-    error: passed ? undefined : `Score ${score.toFixed(2)} below threshold 0.60`,
-  };
-}
+type RunMode = "simulation" | "real";
 
 export default function RunSimulation({
   cases,
   onComplete,
   onCancel,
 }: RunSimulationProps) {
+  const { settings } = useSettings();
   const [results, setResults] = useState<TestResult[]>([]);
   const [phase, setPhase] = useState<"idle" | "running" | "done">("idle");
   const [runningIdx, setRunningIdx] = useState(-1);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const idxRef = useRef(0);
+  const [error, setError] = useState<string | null>(null);
+  const abortRef = useRef(false);
   const accRef = useRef<TestResult[]>([]);
 
-  const startRun = useCallback(() => {
-    idxRef.current = 0;
+  const hasAgentEndpoint = !!(settings.agentEndpoint?.url);
+  const mode: RunMode = hasAgentEndpoint ? "real" : "simulation";
+
+  const executeRealCase = useCallback(
+    async (
+      tc: TestCase,
+      endpoint: AgentEndpoint,
+      defaultEvaluator: EvaluatorConfig | undefined,
+      timeoutMs: number
+    ): Promise<TestResult> => {
+      const res = await fetch("/api/execute", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          testCase: tc,
+          endpoint,
+          defaultEvaluator,
+          timeoutMs,
+        }),
+      });
+
+      const data = await res.json();
+      return data.result;
+    },
+    []
+  );
+
+  const simulateResult = useCallback((tc: TestCase, index: number): TestResult => {
+    const seed = hashCode(tc.id + index);
+    const score = 0.4 + (Math.abs(seed) % 600) / 1000;
+    const passed = score >= 0.6;
+
+    return {
+      testCaseId: tc.id,
+      actualOutput: passed
+        ? `[Simulated] Acceptable response for: ${tc.name}`
+        : `[Simulated] Response missing required elements for: ${tc.name}`,
+      passed,
+      score: Math.min(score, 0.99),
+      latencyMs: 600 + (Math.abs(seed) % 1800),
+      tokenCost: 0.001 + (Math.abs(seed) % 50) / 10000,
+      error: passed ? undefined : `Score ${score.toFixed(2)} below threshold 0.60`,
+    };
+  }, []);
+
+  const startRun = useCallback(async () => {
+    abortRef.current = false;
     accRef.current = [];
     setResults([]);
     setRunningIdx(0);
     setPhase("running");
+    setError(null);
 
-    intervalRef.current = setInterval(() => {
-      const i = idxRef.current;
-      if (i >= cases.length) {
-        if (intervalRef.current) clearInterval(intervalRef.current);
-        const final = accRef.current;
-        setResults(final);
-        setPhase("done");
-        onComplete(final);
-        return;
+    if (mode === "real") {
+      // Execute test cases sequentially against real agent
+      for (let i = 0; i < cases.length; i++) {
+        if (abortRef.current) break;
+
+        setRunningIdx(i);
+        try {
+          const result = await executeRealCase(
+            cases[i],
+            settings.agentEndpoint!,
+            settings.defaultEvaluator,
+            settings.runTimeoutMs || 30000
+          );
+          accRef.current = [...accRef.current, result];
+          setResults([...accRef.current]);
+        } catch (e) {
+          const result: TestResult = {
+            testCaseId: cases[i].id,
+            actualOutput: "",
+            passed: false,
+            score: 0,
+            latencyMs: 0,
+            tokenCost: 0,
+            error: e instanceof Error ? e.message : "Execution failed",
+          };
+          accRef.current = [...accRef.current, result];
+          setResults([...accRef.current]);
+        }
+        setRunningIdx(i + 1);
       }
+    } else {
+      // Simulation mode — animated sequential with fake timing
+      for (let i = 0; i < cases.length; i++) {
+        if (abortRef.current) break;
 
-      const result = simulateResult(cases[i], i);
-      accRef.current = [...accRef.current, result];
-      idxRef.current = i + 1;
-      setResults([...accRef.current]);
-      setRunningIdx(i + 1);
-    }, 500 + Math.random() * 400);
-  }, [cases, onComplete]);
+        setRunningIdx(i);
+        await sleep(500 + Math.random() * 400);
+        if (abortRef.current) break;
+
+        const result = simulateResult(cases[i], i);
+        accRef.current = [...accRef.current, result];
+        setResults([...accRef.current]);
+        setRunningIdx(i + 1);
+      }
+    }
+
+    if (!abortRef.current) {
+      const final = accRef.current;
+      setResults(final);
+      setPhase("done");
+      onComplete(final);
+    }
+  }, [cases, onComplete, mode, settings, executeRealCase, simulateResult]);
 
   const handleCancel = useCallback(() => {
-    if (intervalRef.current) clearInterval(intervalRef.current);
+    abortRef.current = true;
     onCancel();
   }, [onCancel]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      abortRef.current = true;
+    };
+  }, []);
 
   const passed = results.filter((r) => r.passed).length;
   const failed = results.filter((r) => !r.passed).length;
@@ -87,7 +162,7 @@ export default function RunSimulation({
           <div>
             <h3 className="text-sm font-semibold mb-1">Ready to Run</h3>
             <p className="text-xs text-[var(--text-muted)]">
-              {cases.length} test cases will be executed sequentially
+              {cases.length} test cases will be executed {mode === "real" ? "against your agent endpoint" : "sequentially (simulation)"}
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -105,6 +180,18 @@ export default function RunSimulation({
             </button>
           </div>
         </div>
+        {mode === "simulation" && (
+          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[var(--yellow-bg)] text-[var(--yellow)] text-xs mb-3">
+            <AlertTriangle size={12} />
+            <span>Simulation mode — configure an Agent Endpoint in Settings for real testing</span>
+          </div>
+        )}
+        {mode === "real" && (
+          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[var(--green-bg)] text-[var(--green)] text-xs mb-3">
+            <CheckCircle2 size={12} />
+            <span>Real mode — calling {settings.agentEndpoint?.type} at {maskUrl(settings.agentEndpoint?.url || "")}</span>
+          </div>
+        )}
         <div className="space-y-1">
           {cases.map((tc) => (
             <div
@@ -136,7 +223,9 @@ export default function RunSimulation({
             />
           </div>
           <div>
-            <h3 className="text-sm font-semibold">Run Complete</h3>
+            <h3 className="text-sm font-semibold">
+              Run Complete {mode === "simulation" && "(Simulated)"}
+            </h3>
             <p className="text-xs text-[var(--text-muted)]">
               {passed} passed, {failed} failed &middot;{" "}
               {results.reduce((s, r) => s + r.latencyMs, 0)}ms total
@@ -147,13 +236,14 @@ export default function RunSimulation({
     );
   }
 
+  // Running phase
   return (
     <div className="glass-card p-6">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <Loader2 size={14} className="text-[var(--accent-light)] animate-spin" />
           <span className="text-sm font-semibold">
-            Running test {Math.min(runningIdx + 1, cases.length)} of {cases.length}
+            {mode === "real" ? "Testing" : "Simulating"} {Math.min(runningIdx + 1, cases.length)} of {cases.length}
           </span>
         </div>
         <div className="flex items-center gap-3 text-xs">
@@ -247,4 +337,17 @@ function hashCode(s: string): number {
     hash |= 0;
   }
   return hash;
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function maskUrl(url: string): string {
+  try {
+    const u = new URL(url);
+    return u.host;
+  } catch {
+    return url.slice(0, 30) + (url.length > 30 ? "..." : "");
+  }
 }

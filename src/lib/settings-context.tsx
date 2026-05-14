@@ -9,12 +9,16 @@ import {
   useSyncExternalStore,
 } from "react";
 import { AIProviderConfig, ProviderType, PROVIDER_DEFAULTS } from "./ai-provider";
+import { AgentEndpoint, EvaluatorConfig } from "./types";
 
 export interface Settings {
   provider: ProviderType;
   apiKey: string;
   model: string;
   baseUrl: string;
+  agentEndpoint?: AgentEndpoint;
+  defaultEvaluator?: EvaluatorConfig;
+  runTimeoutMs?: number;
 }
 
 const DEFAULT_SETTINGS: Settings = {
@@ -22,6 +26,9 @@ const DEFAULT_SETTINGS: Settings = {
   apiKey: "",
   model: PROVIDER_DEFAULTS.anthropic.model,
   baseUrl: PROVIDER_DEFAULTS.anthropic.baseUrl,
+  agentEndpoint: undefined,
+  defaultEvaluator: { type: "contains", threshold: 0.6 },
+  runTimeoutMs: 30000,
 };
 
 const STORAGE_KEY = "agentbench-settings";

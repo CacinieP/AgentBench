@@ -120,6 +120,15 @@ export default function RunDetailPage() {
             <span className="text-xs font-mono px-2 py-0.5 rounded bg-[var(--accent-bg)] text-[var(--accent-light)]">
               {run.agentVersion}
             </span>
+            {run.modelVersion === "live" ? (
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-[var(--green-bg)] text-[var(--green)]">
+                LIVE
+              </span>
+            ) : (
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-[var(--yellow-bg)] text-[var(--yellow)]">
+                SIMULATED
+              </span>
+            )}
           </div>
           <p className="text-xs text-[var(--text-muted)]">
             {formatRelativeTime(run.timestamp)} &middot; {run.modelVersion}
@@ -338,6 +347,11 @@ export default function RunDetailPage() {
                       {tc.category}
                     </span>
                   )}
+                  {result.evaluatorType && (
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--accent-bg)] text-[var(--accent-light)]">
+                      {result.evaluatorType}
+                    </span>
+                  )}
                 </div>
                 <div className="flex items-center gap-4">
                   <div className="progress-bar w-12">
@@ -387,7 +401,7 @@ export default function RunDetailPage() {
                       Actual Output
                     </p>
                     <p
-                      className="text-xs p-3 rounded-lg leading-relaxed"
+                      className="text-xs p-3 rounded-lg leading-relaxed whitespace-pre-wrap"
                       style={{
                         backgroundColor: result.passed
                           ? "var(--green-bg)"
@@ -410,11 +424,19 @@ export default function RunDetailPage() {
                       </p>
                     </div>
                   )}
-                  <div className="flex items-center gap-6 pt-2">
+                  {result.judgeRationale && (
+                    <div>
+                      <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider mb-1">
+                        Evaluator Rationale
+                      </p>
+                      <p className="text-xs text-[var(--text-secondary)] bg-[var(--bg-secondary)] p-3 rounded-lg leading-relaxed">
+                        {result.judgeRationale}
+                      </p>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-6 pt-2 flex-wrap">
                     <div className="text-xs">
-                      <span className="text-[var(--text-muted)]">
-                        Score:
-                      </span>{" "}
+                      <span className="text-[var(--text-muted)]">Score:</span>{" "}
                       <span
                         className="font-mono"
                         style={{ color: scoreColor(result.score) }}
@@ -423,21 +445,25 @@ export default function RunDetailPage() {
                       </span>
                     </div>
                     <div className="text-xs">
-                      <span className="text-[var(--text-muted)]">
-                        Latency:
-                      </span>{" "}
+                      <span className="text-[var(--text-muted)]">Latency:</span>{" "}
                       <span className="font-mono text-[var(--text-secondary)]">
                         {result.latencyMs}ms
                       </span>
                     </div>
                     <div className="text-xs">
-                      <span className="text-[var(--text-muted)]">
-                        Cost:
-                      </span>{" "}
+                      <span className="text-[var(--text-muted)]">Cost:</span>{" "}
                       <span className="font-mono text-[var(--text-secondary)]">
                         ${result.tokenCost.toFixed(4)}
                       </span>
                     </div>
+                    {result.evaluatorType && (
+                      <div className="text-xs">
+                        <span className="text-[var(--text-muted)]">Evaluator:</span>{" "}
+                        <span className="font-mono text-[var(--accent-light)]">
+                          {result.evaluatorType}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
