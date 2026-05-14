@@ -325,6 +325,48 @@ export const demoRuns: TestRun[] = [
     agentVersion: "v1.1.0",
     modelVersion: "claude-sonnet-4-6",
   },
+  {
+    id: "run-extract-v1-0",
+    suiteId: "suite-3",
+    suiteName: "Data Extraction Agent",
+    timestamp: new Date(Date.now() - 7200000).toISOString(),
+    results: [
+      {
+        testCaseId: "tc-3-1",
+        actualOutput: `{"invoice_number":"INV-2024-001","date":"2026-03-15","subtotal":1250.00,"tax":106.25,"shipping":15.00,"total":1371.25}`,
+        passed: true,
+        score: 0.97,
+        latencyMs: 1450,
+        tokenCost: 0.0039,
+      },
+      {
+        testCaseId: "tc-3-2",
+        actualOutput: `{"store":"Walmart","items":[{"name":"Organic Milk","quantity":2,"price":9.98},{"name":"Bread","quantity":1,"price":3.49}],"discount":2.00,"total":11.47,"payment":{"type":"Visa","last4":"1234"}}`,
+        passed: true,
+        score: 0.92,
+        latencyMs: 1380,
+        tokenCost: 0.0036,
+      },
+      {
+        testCaseId: "tc-3-3",
+        actualOutput: `{"action_items":[{"assignee":"Sarah","task":"send Q4 report","deadline":"Friday"},{"assignee":"Mike","task":"update API docs","deadline":"20th"}],"next_meeting":"next Tuesday 2pm"}`,
+        passed: true,
+        score: 0.94,
+        latencyMs: 1220,
+        tokenCost: 0.0033,
+      },
+    ],
+    summary: {
+      total: 3,
+      passed: 3,
+      failed: 0,
+      avgScore: 0.943,
+      totalLatencyMs: 4050,
+      totalTokenCost: 0.0108,
+    },
+    agentVersion: "v1.0.0",
+    modelVersion: "claude-sonnet-4-6",
+  },
 ];
 
 export const demoAIAnalysis = {

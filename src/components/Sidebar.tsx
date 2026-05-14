@@ -8,8 +8,10 @@ import {
   GitCompareArrows,
   FlaskConical,
   Zap,
+  Activity,
 } from "lucide-react";
 import clsx from "clsx";
+import { demoRuns } from "@/lib/demo-data";
 
 const navItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -19,6 +21,11 @@ const navItems = [
 
 export default function Sidebar() {
   const pathname = usePathname();
+
+  const isActive = (href: string) => {
+    if (href === "/") return pathname === "/";
+    return pathname.startsWith(href) || pathname.startsWith("/run");
+  };
 
   return (
     <aside className="fixed left-0 top-0 bottom-0 w-60 flex flex-col border-r border-[var(--border)] bg-[var(--bg-secondary)] z-50">
@@ -36,28 +43,57 @@ export default function Sidebar() {
         </div>
       </div>
 
-      <nav className="flex-1 px-3 py-4 space-y-1">
-        {navItems.map(({ href, label, icon: Icon }) => {
-          const isActive =
-            href === "/"
-              ? pathname === "/"
-              : pathname.startsWith(href);
-          return (
-            <Link
-              key={href}
-              href={href}
-              className={clsx(
-                "flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-all",
-                isActive
-                  ? "bg-[var(--accent-bg)] text-[var(--accent-light)]"
-                  : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-card)]"
-              )}
+      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+        <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider px-3 mb-2">
+          Navigation
+        </p>
+        {navItems.map(({ href, label, icon: Icon }) => (
+          <Link
+            key={href}
+            href={href}
+            className={clsx(
+              "flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-all",
+              isActive(href)
+                ? "bg-[var(--accent-bg)] text-[var(--accent-light)]"
+                : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-card)]"
+            )}
+          >
+            <Icon size={16} />
+            {label}
+          </Link>
+        ))}
+
+        <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider px-3 mt-5 mb-2">
+          Recent Runs
+        </p>
+        {demoRuns.map((run) => (
+          <Link
+            key={run.id}
+            href={`/run/${run.id}`}
+            className={clsx(
+              "flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs transition-all",
+              pathname === `/run/${run.id}`
+                ? "bg-[var(--accent-bg)] text-[var(--accent-light)]"
+                : "text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-[var(--bg-card)]"
+            )}
+          >
+            <Activity size={12} className="shrink-0" />
+            <span className="truncate flex-1">{run.suiteName}</span>
+            <span
+              className="font-mono text-[10px] shrink-0"
+              style={{
+                color:
+                  run.summary.avgScore > 0.7
+                    ? "var(--green)"
+                    : run.summary.avgScore > 0.4
+                      ? "var(--yellow)"
+                      : "var(--red)",
+              }}
             >
-              <Icon size={16} />
-              {label}
-            </Link>
-          );
-        })}
+              {run.summary.avgScore.toFixed(2)}
+            </span>
+          </Link>
+        ))}
       </nav>
 
       <div className="px-4 py-4 border-t border-[var(--border)]">

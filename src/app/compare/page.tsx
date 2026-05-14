@@ -1,0 +1,567 @@
+"use client";
+
+import { useState, useMemo } from "react";
+import {
+  GitCompareArrows,
+  TrendingUp,
+  TrendingDown,
+  AlertTriangle,
+  CheckCircle2,
+  XCircle,
+  Sparkles,
+  ArrowUpRight,
+  ArrowDownRight,
+  Minus,
+  ChevronDown,
+} from "lucide-react";
+import StatusBadge from "@/components/StatusBadge";
+import ScoreRing from "@/components/ScoreRing";
+import { demoRuns, demoAIAnalysis } from "@/lib/demo-data";
+import { scoreColor } from "@/lib/utils";
+
+export default function ComparePage() {
+  const [baselineId, setBaselineId] = useState(demoRuns[1].id);
+  const [candidateId, setCandidateId] = useState(demoRuns[0].id);
+  const [showAnalysis, setShowAnalysis] = useState(false);
+  const [showBaselinePicker, setShowBaselinePicker] = useState(false);
+  const [showCandidatePicker, setShowCandidatePicker] = useState(false);
+
+  const baseline = demoRuns.find((r) => r.id === baselineId) || demoRuns[1];
+  const candidate = demoRuns.find((r) => r.id === candidateId) || demoRuns[0];
+
+  const scoreDelta = candidate.summary.avgScore - baseline.summary.avgScore;
+  const passRateDelta =
+    candidate.summary.passed / candidate.summary.total -
+    baseline.summary.passed / baseline.summary.total;
+  const latencyDelta =
+    candidate.summary.totalLatencyMs - baseline.summary.totalLatencyMs;
+  const costDelta =
+    candidate.summary.totalTokenCost - baseline.summary.totalTokenCost;
+
+  const getDeltaIcon = (val: number) =>
+    val > 0 ? (
+      <ArrowUpRight size={12} />
+    ) : val < 0 ? (
+      <ArrowDownRight size={12} />
+    ) : (
+      <Minus size={12} />
+    );
+
+  const getDeltaColor = (val: number, invert = false) => {
+    const positive = invert ? val < 0 : val > 0;
+    return positive
+      ? "var(--green)"
+      : val === 0
+        ? "var(--text-muted)"
+        : "var(--red)";
+  };
+
+  const { regressions, improvements } = useMemo(() => {
+    const regs: { name: string; baseline: number; candidate: number }[] = [];
+    const imps: { name: string; baseline: number; candidate: number }[] = [];
+
+    baseline.results.forEach((br) => {
+      const cr = candidate.results.find(
+        (r) => r.testCaseId === br.testCaseId
+      );
+      if (cr) {
+        const delta = cr.score - br.score;
+        const tcName = br.testCaseId
+          .replace("tc-1-", "Test #")
+          .replace("tc-2-", "Test #")
+          .replace("tc-3-", "Test #");
+        if (delta < -0.05) {
+          regs.push({ name: tcName, baseline: br.score, candidate: cr.score });
+        } else if (delta > 0.05) {
+          imps.push({ name: tcName, baseline: br.score, candidate: cr.score });
+        }
+      }
+    });
+
+    return { regressions: regs, improvements: imps };
+  }, [baseline, candidate]);
+
+  return (
+    <div className="p-8 max-w-[1200px] mx-auto">
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-2xl font-bold mb-1">Compare Runs</h1>
+          <p className="text-sm text-[var(--text-secondary)]">
+            Side-by-side regression analysis between versions
+          </p>
+        </div>
+        <button
+          onClick={() => setShowAnalysis(!showAnalysis)}
+          className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+          style={{
+            backgroundColor: showAnalysis ? "var(--accent)" : "var(--accent-bg)",
+            color: showAnalysis ? "white" : "var(--accent-light)",
+          }}
+        >
+          <Sparkles size={14} />
+          {showAnalysis ? "Hide AI Analysis" : "AI Analysis"}
+        </button>
+      </div>
+
+      {/* Version selector */}
+      <div className="glass-card p-5 mb-6">
+        <div className="grid grid-cols-[1fr_auto_1fr] gap-6 items-center">
+          <div className="text-center relative">
+            <p className="text-xs text-[var(--text-muted)] mb-2">BASELINE</p>
+            <button
+              onClick={() => {
+                setShowBaselinePicker(!showBaselinePicker);
+                setShowCandidatePicker(false);
+              }}
+              className="flex items-center gap-2 mx-auto px-3 py-1.5 rounded-lg text-sm font-mono transition-colors hover:opacity-80"
+              style={{
+                backgroundColor: "var(--red-bg)",
+                color: "var(--red)",
+              }}
+            >
+              {baseline.agentVersion}
+              <ChevronDown size={12} />
+            </button>
+            {showBaselinePicker && (
+              <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1 z-10 glass-card p-1 w-48">
+                {demoRuns.map((r) => (
+                  <button
+                    key={r.id}
+                    onClick={() => {
+                      setBaselineId(r.id);
+                      setShowBaselinePicker(false);
+                    }}
+                    className={`w-full text-left px-3 py-2 rounded-md text-xs transition-colors ${
+                      r.id === baselineId
+                        ? "bg-[var(--accent-bg)] text-[var(--accent-light)]"
+                        : "text-[var(--text-secondary)] hover:bg-[var(--bg-card-hover)]"
+                    }`}
+                  >
+                    <span className="font-mono">{r.agentVersion}</span>
+                    <span className="ml-2 text-[var(--text-muted)]">
+                      {r.suiteName}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
+            <p className="text-xs text-[var(--text-muted)] mt-2">
+              {baseline.modelVersion}
+            </p>
+          </div>
+          <div className="flex flex-col items-center gap-2">
+            <div className="flex items-center gap-2">
+              <ScoreRing
+                score={baseline.summary.avgScore}
+                size={48}
+                strokeWidth={4}
+              />
+              <GitCompareArrows
+                size={20}
+                className="text-[var(--text-muted)]"
+              />
+              <ScoreRing
+                score={candidate.summary.avgScore}
+                size={48}
+                strokeWidth={4}
+              />
+            </div>
+            <span
+              className="text-xs font-mono font-bold"
+              style={{ color: getDeltaColor(scoreDelta) }}
+            >
+              {scoreDelta > 0 ? "+" : ""}
+              {scoreDelta.toFixed(2)} score delta
+            </span>
+          </div>
+          <div className="text-center relative">
+            <p className="text-xs text-[var(--text-muted)] mb-2">CANDIDATE</p>
+            <button
+              onClick={() => {
+                setShowCandidatePicker(!showCandidatePicker);
+                setShowBaselinePicker(false);
+              }}
+              className="flex items-center gap-2 mx-auto px-3 py-1.5 rounded-lg text-sm font-mono transition-colors hover:opacity-80"
+              style={{
+                backgroundColor: "var(--green-bg)",
+                color: "var(--green)",
+              }}
+            >
+              {candidate.agentVersion}
+              <ChevronDown size={12} />
+            </button>
+            {showCandidatePicker && (
+              <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1 z-10 glass-card p-1 w-48">
+                {demoRuns.map((r) => (
+                  <button
+                    key={r.id}
+                    onClick={() => {
+                      setCandidateId(r.id);
+                      setShowCandidatePicker(false);
+                    }}
+                    className={`w-full text-left px-3 py-2 rounded-md text-xs transition-colors ${
+                      r.id === candidateId
+                        ? "bg-[var(--accent-bg)] text-[var(--accent-light)]"
+                        : "text-[var(--text-secondary)] hover:bg-[var(--bg-card-hover)]"
+                    }`}
+                  >
+                    <span className="font-mono">{r.agentVersion}</span>
+                    <span className="ml-2 text-[var(--text-muted)]">
+                      {r.suiteName}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
+            <p className="text-xs text-[var(--text-muted)] mt-2">
+              {candidate.modelVersion}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Delta metrics */}
+      <div className="grid grid-cols-4 gap-4 mb-6">
+        {[
+          {
+            label: "Score",
+            value: scoreDelta.toFixed(3),
+            raw: scoreDelta,
+            display: `${baseline.summary.avgScore.toFixed(2)} → ${candidate.summary.avgScore.toFixed(2)}`,
+            invert: false,
+          },
+          {
+            label: "Pass Rate",
+            value: `${(passRateDelta * 100).toFixed(0)}%`,
+            raw: passRateDelta,
+            display: `${baseline.summary.passed}/${baseline.summary.total} → ${candidate.summary.passed}/${candidate.summary.total}`,
+            invert: false,
+          },
+          {
+            label: "Latency",
+            value: `${latencyDelta > 0 ? "+" : ""}${(latencyDelta / 1000).toFixed(1)}s`,
+            raw: -latencyDelta,
+            display: `${(baseline.summary.totalLatencyMs / 1000).toFixed(1)}s → ${(candidate.summary.totalLatencyMs / 1000).toFixed(1)}s`,
+            invert: true,
+          },
+          {
+            label: "Cost",
+            value: `${costDelta > 0 ? "+" : ""}$${costDelta.toFixed(4)}`,
+            raw: -costDelta,
+            display: `$${baseline.summary.totalTokenCost.toFixed(4)} → $${candidate.summary.totalTokenCost.toFixed(4)}`,
+            invert: true,
+          },
+        ].map((m) => (
+          <div key={m.label} className="glass-card p-4">
+            <p className="text-xs text-[var(--text-muted)] mb-2">{m.label}</p>
+            <div className="flex items-center gap-2">
+              <span
+                className="flex items-center text-lg font-bold"
+                style={{ color: getDeltaColor(m.raw, m.invert) }}
+              >
+                {getDeltaIcon(m.raw)}
+                {m.value}
+              </span>
+            </div>
+            <p className="text-xs text-[var(--text-muted)] mt-1">{m.display}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Visual comparison bars */}
+      <div className="glass-card p-5 mb-6">
+        <h3 className="text-sm font-semibold mb-4">Visual Comparison</h3>
+        <div className="space-y-3">
+          {baseline.results.map((br) => {
+            const cr = candidate.results.find(
+              (r) => r.testCaseId === br.testCaseId
+            );
+            const tcName = br.testCaseId
+              .replace("tc-1-", "Test #")
+              .replace("tc-2-", "Test #")
+              .replace("tc-3-", "Test #");
+            return (
+              <div key={br.testCaseId} className="flex items-center gap-3">
+                <span className="text-xs text-[var(--text-secondary)] w-16 shrink-0">
+                  {tcName}
+                </span>
+                <div className="flex-1 flex items-center gap-1">
+                  <div
+                    className="h-5 rounded-l-md transition-all duration-700"
+                    style={{
+                      width: `${br.score * 100}%`,
+                      backgroundColor: scoreColor(br.score),
+                      opacity: 0.5,
+                    }}
+                  />
+                  <div className="w-px h-5 bg-[var(--border-light)]" />
+                  {cr && (
+                    <div
+                      className="h-5 rounded-r-md transition-all duration-700"
+                      style={{
+                        width: `${cr.score * 100}%`,
+                        backgroundColor: scoreColor(cr.score),
+                      }}
+                    />
+                  )}
+                </div>
+                {cr && (
+                  <span
+                    className="text-xs font-mono w-12 text-right shrink-0"
+                    style={{ color: getDeltaColor(cr.score - br.score) }}
+                  >
+                    {cr.score - br.score > 0 ? "+" : ""}
+                    {(cr.score - br.score).toFixed(2)}
+                  </span>
+                )}
+              </div>
+            );
+          })}
+        </div>
+        <div className="flex items-center gap-4 mt-3 pt-3 border-t border-[var(--border)]">
+          <span className="flex items-center gap-1 text-[10px] text-[var(--text-muted)]">
+            <span className="w-3 h-2 rounded-sm opacity-50" style={{ backgroundColor: "var(--red)" }} />
+            Baseline
+          </span>
+          <span className="flex items-center gap-1 text-[10px] text-[var(--text-muted)]">
+            <span className="w-3 h-2 rounded-sm" style={{ backgroundColor: "var(--green)" }} />
+            Candidate
+          </span>
+        </div>
+      </div>
+
+      {/* Test-by-test comparison table */}
+      <div className="glass-card overflow-hidden mb-6">
+        <div className="px-5 py-3 border-b border-[var(--border)] bg-[var(--bg-secondary)]">
+          <h3 className="text-sm font-semibold">Test-by-Test Comparison</h3>
+        </div>
+        <table className="w-full">
+          <thead>
+            <tr className="border-b border-[var(--border)]">
+              <th className="text-left text-xs text-[var(--text-muted)] uppercase tracking-wider px-5 py-2.5">
+                Test Case
+              </th>
+              <th className="text-center text-xs text-[var(--text-muted)] uppercase tracking-wider px-5 py-2.5">
+                Baseline
+              </th>
+              <th className="text-center text-xs text-[var(--text-muted)] uppercase tracking-wider px-5 py-2.5">
+                Candidate
+              </th>
+              <th className="text-center text-xs text-[var(--text-muted)] uppercase tracking-wider px-5 py-2.5">
+                Delta
+              </th>
+              <th className="text-left text-xs text-[var(--text-muted)] uppercase tracking-wider px-5 py-2.5">
+                Status
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {baseline.results.map((br) => {
+              const cr = candidate.results.find(
+                (r) => r.testCaseId === br.testCaseId
+              );
+              const delta = cr ? cr.score - br.score : 0;
+              const tcName = br.testCaseId
+                .replace("tc-1-", "Test #")
+                .replace("tc-2-", "Test #")
+                .replace("tc-3-", "Test #");
+              return (
+                <tr
+                  key={br.testCaseId}
+                  className="border-b border-[var(--border)] last:border-0"
+                >
+                  <td className="px-5 py-3 text-sm">{tcName}</td>
+                  <td className="px-5 py-3 text-center">
+                    <span
+                      className="text-sm font-mono"
+                      style={{ color: scoreColor(br.score) }}
+                    >
+                      {br.score.toFixed(2)}
+                    </span>
+                  </td>
+                  <td className="px-5 py-3 text-center">
+                    {cr && (
+                      <span
+                        className="text-sm font-mono"
+                        style={{ color: scoreColor(cr.score) }}
+                      >
+                        {cr.score.toFixed(2)}
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-5 py-3 text-center">
+                    <span
+                      className="text-sm font-mono flex items-center justify-center gap-1"
+                      style={{ color: getDeltaColor(delta) }}
+                    >
+                      {getDeltaIcon(delta)}
+                      {delta > 0 ? "+" : ""}
+                      {delta.toFixed(2)}
+                    </span>
+                  </td>
+                  <td className="px-5 py-3">
+                    {delta < -0.05 ? (
+                      <StatusBadge status="fail" label="Regression" />
+                    ) : delta > 0.05 ? (
+                      <StatusBadge status="pass" label="Improved" />
+                    ) : (
+                      <StatusBadge status="warning" label="Unchanged" />
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Improvements & Regressions */}
+      <div className="grid grid-cols-2 gap-4 mb-6">
+        <div className="glass-card p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <CheckCircle2 size={14} style={{ color: "var(--green)" }} />
+            <h3 className="text-sm font-semibold">
+              Improvements ({improvements.length})
+            </h3>
+          </div>
+          {improvements.length === 0 ? (
+            <p className="text-xs text-[var(--text-muted)]">
+              No significant improvements detected
+            </p>
+          ) : (
+            <div className="space-y-2">
+              {improvements.map((imp, i) => (
+                <div
+                  key={i}
+                  className="flex items-center justify-between text-xs"
+                >
+                  <span className="text-[var(--text-secondary)]">
+                    {imp.name}
+                  </span>
+                  <span style={{ color: "var(--green)" }}>
+                    <TrendingUp size={10} className="inline mr-1" />
+                    +{(imp.candidate - imp.baseline).toFixed(2)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+        <div className="glass-card p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <XCircle size={14} style={{ color: "var(--red)" }} />
+            <h3 className="text-sm font-semibold">
+              Regressions ({regressions.length})
+            </h3>
+          </div>
+          {regressions.length === 0 ? (
+            <p className="text-xs text-[var(--text-muted)]">
+              No regressions detected — all clear!
+            </p>
+          ) : (
+            <div className="space-y-2">
+              {regressions.map((reg, i) => (
+                <div
+                  key={i}
+                  className="flex items-center justify-between text-xs"
+                >
+                  <span className="text-[var(--text-secondary)]">
+                    {reg.name}
+                  </span>
+                  <span style={{ color: "var(--red)" }}>
+                    <TrendingDown size={10} className="inline mr-1" />
+                    {(reg.candidate - reg.baseline).toFixed(2)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* AI Analysis */}
+      {showAnalysis && (
+        <div className="glass-card p-6 fade-in">
+          <div className="flex items-center gap-2 mb-4">
+            <Sparkles size={16} className="text-[var(--accent-light)]" />
+            <h3 className="text-base font-semibold">AI-Powered Analysis</h3>
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-[var(--accent-bg)] text-[var(--accent-light)]">
+              Claude
+            </span>
+          </div>
+          <div className="space-y-4">
+            <div>
+              <p className="text-sm text-[var(--text-primary)] leading-relaxed">
+                {demoAIAnalysis.summary}
+              </p>
+            </div>
+            {demoAIAnalysis.regressionPatterns.length > 0 && (
+              <div>
+                <h4 className="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wider mb-2">
+                  Identified Patterns
+                </h4>
+                <ul className="space-y-1.5">
+                  {demoAIAnalysis.regressionPatterns.map((p, i) => (
+                    <li
+                      key={i}
+                      className="flex items-start gap-2 text-sm text-[var(--text-secondary)]"
+                    >
+                      <AlertTriangle
+                        size={12}
+                        className="mt-1 shrink-0"
+                        style={{ color: "var(--yellow)" }}
+                      />
+                      {p}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {demoAIAnalysis.suggestedFixes.length > 0 && (
+              <div>
+                <h4 className="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wider mb-2">
+                  Suggested Fixes
+                </h4>
+                <ul className="space-y-1.5">
+                  {demoAIAnalysis.suggestedFixes.map((f, i) => (
+                    <li
+                      key={i}
+                      className="flex items-start gap-2 text-sm text-[var(--text-secondary)]"
+                    >
+                      <span
+                        className="mt-0.5 w-4 h-4 rounded flex items-center justify-center text-[10px] shrink-0"
+                        style={{
+                          backgroundColor: "var(--green-bg)",
+                          color: "var(--green)",
+                        }}
+                      >
+                        {i + 1}
+                      </span>
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            <div className="flex items-center gap-2 pt-2 border-t border-[var(--border)]">
+              <span className="text-xs text-[var(--text-muted)]">
+                Risk Assessment:
+              </span>
+              <StatusBadge
+                status={
+                  demoAIAnalysis.riskAssessment === "low"
+                    ? "pass"
+                    : demoAIAnalysis.riskAssessment === "medium"
+                      ? "warning"
+                      : "fail"
+                }
+                label={demoAIAnalysis.riskAssessment.toUpperCase()}
+                size="md"
+              />
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
