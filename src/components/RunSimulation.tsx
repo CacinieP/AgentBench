@@ -243,7 +243,7 @@ export default function RunSimulation({
               style={{ color: failed === 0 ? "var(--green)" : "var(--yellow)" }}
             />
           </div>
-          <div>
+          <div className="flex-1">
             <h3 className="text-sm font-semibold">
               Run Complete {mode === "simulation" && "(Simulated)"}
             </h3>
@@ -252,6 +252,16 @@ export default function RunSimulation({
               {results.reduce((s, r) => s + r.latencyMs, 0)}ms total
             </p>
           </div>
+          <button
+            onClick={() => {
+              setPhase("idle");
+              setResults([]);
+              setRunningIdx(-1);
+            }}
+            className="px-3 py-1.5 rounded-lg text-xs font-medium bg-[var(--accent-bg)] text-[var(--accent-light)] hover:opacity-80 transition-opacity"
+          >
+            Run Again
+          </button>
         </div>
       </div>
     );

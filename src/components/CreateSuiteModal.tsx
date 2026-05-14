@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { X, Plus, Trash2 } from "lucide-react";
 import { useData } from "@/lib/data-context";
-import { TestSuite, TestCase } from "@/lib/types";
+import { useSettings } from "@/lib/settings-context";
+import { TestSuite, TestCase, EvaluatorType } from "@/lib/types";
 
 interface CreateSuiteModalProps {
   open: boolean;
@@ -15,6 +16,7 @@ interface DraftCase {
   input: string;
   expectedOutput: string;
   category: string;
+  evaluatorType: EvaluatorType | "";
 }
 
 function genId(prefix: string): string {
@@ -26,6 +28,7 @@ const emptyCase: DraftCase = {
   input: "",
   expectedOutput: "",
   category: "general",
+  evaluatorType: "",
 };
 
 export default function CreateSuiteModal({
@@ -88,6 +91,7 @@ export default function CreateSuiteModal({
       input: c.input.trim(),
       expectedOutput: c.expectedOutput.trim(),
       category: c.category.trim(),
+      evaluator: c.evaluatorType ? { type: c.evaluatorType, threshold: 0.6 } : undefined,
     }));
 
     const suite: TestSuite = {
@@ -273,6 +277,21 @@ export default function CreateSuiteModal({
                     placeholder="Category (e.g. billing, security)"
                     className="w-full bg-[var(--bg-secondary)] border border-[var(--border)] rounded-md px-2.5 py-1.5 text-xs text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--accent)] transition-colors"
                   />
+                  <div className="flex items-center gap-2">
+                    <label className="text-[10px] text-[var(--text-muted)] shrink-0">Evaluator:</label>
+                    <select
+                      value={tc.evaluatorType}
+                      onChange={(e) => updateCase(i, "evaluatorType", e.target.value)}
+                      className="flex-1 bg-[var(--bg-secondary)] border border-[var(--border)] rounded-md px-2 py-1 text-[10px] text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent)] transition-colors"
+                    >
+                      <option value="">Default</option>
+                      <option value="contains">Contains</option>
+                      <option value="exact_match">Exact Match</option>
+                      <option value="regex">Regex</option>
+                      <option value="json_schema">JSON Schema</option>
+                      <option value="llm_judge">LLM Judge</option>
+                    </select>
+                  </div>
                 </div>
               ))}
             </div>

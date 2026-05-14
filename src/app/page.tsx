@@ -300,9 +300,16 @@ export default function Dashboard() {
                       <span className="text-sm">{run.suiteName}</span>
                     </td>
                     <td className="px-5 py-3">
-                      <span className="text-xs font-mono text-[var(--accent-light)] bg-[var(--accent-bg)] px-2 py-0.5 rounded">
-                        {run.agentVersion}
-                      </span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs font-mono text-[var(--accent-light)] bg-[var(--accent-bg)] px-2 py-0.5 rounded">
+                          {run.agentVersion}
+                        </span>
+                        {!run.agentVersion.startsWith('sim-') ? (
+                          <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-[var(--green-bg)] text-[var(--green)]">LIVE</span>
+                        ) : (
+                          <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-[var(--yellow-bg)] text-[var(--yellow)]">SIM</span>
+                        )}
+                      </div>
                     </td>
                     <td className="px-5 py-3">
                       <StatusBadge
