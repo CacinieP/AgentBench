@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import {
   TestTube2,
   Plus,
@@ -14,29 +14,116 @@ import {
 import StatusBadge from "@/components/StatusBadge";
 import RunSimulation from "@/components/RunSimulation";
 import ScoreRing from "@/components/ScoreRing";
-import { demoSuites, demoRuns } from "@/lib/demo-data";
-import { TestResult } from "@/lib/types";
+import CreateSuiteModal from "@/components/CreateSuiteModal";
+import { useData } from "@/lib/data-context";
+import { TestResult, TestRun } from "@/lib/types";
 
 export default function SuitesPage() {
-  const [expandedSuite, setExpandedSuite] = useState<string | null>(
-    demoSuites[0].id
-  );
+  const { suites, runs, addRun } = useData();
+  const [expandedSuite, setExpandedSuite] = useState<string | null>(null);
   const [simulatingSuite, setSimulatingSuite] = useState<string | null>(null);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+
+  const sortedRuns = useMemo(
+    () =>
+      [...runs].sort(
+        (a, b) =>
+          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      ),
+    [runs]
+  );
+
+  const getLatestRunForSuite = useCallback(
+    (suiteId: string) =>
+      sortedRuns.find((r) => r.suiteId === suiteId),
+    [sortedRuns]
+  );
 
   const handleRunTest = (suiteId: string) => {
     setSimulatingSuite(suiteId);
   };
 
   const handleSimComplete = useCallback(
-    (_suiteId: string) => (_results: TestResult[]) => {
+    (suiteId: string) => (results: TestResult[]) => {
+      const suite = suites.find((s) => s.id === suiteId);
+      if (!suite) {
+        setSimulatingSuite(null);
+        return;
+      }
+
+      const total = results.length;
+      const passed = results.filter((r) => r.passed).length;
+      const avgScore = results.reduce((s, r) => s + r.score, 0) / total;
+
+      const run: TestRun = {
+        id: `run-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        suiteId: suite.id,
+        suiteName: suite.name,
+        timestamp: new Date().toISOString(),
+        results,
+        summary: {
+          total,
+          passed,
+          failed: total - passed,
+          avgScore: Math.round(avgScore * 1000) / 1000,
+          totalLatencyMs: results.reduce((s, r) => s + r.latencyMs, 0),
+          totalTokenCost:
+            Math.round(
+              results.reduce((s, r) => s + r.tokenCost, 0) * 10000
+            ) / 10000,
+        },
+        agentVersion: `sim-${Date.now().toString(36)}`,
+        modelVersion: "simulation",
+      };
+
+      addRun(run);
       setSimulatingSuite(null);
     },
-    []
+    [suites, addRun]
   );
 
   const handleSimCancel = useCallback(() => {
     setSimulatingSuite(null);
   }, []);
+
+  if (suites.length === 0) {
+    return (
+      <div className="p-8 max-w-[1200px] mx-auto">
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-2xl font-bold mb-1">Test Suites</h1>
+            <p className="text-sm text-[var(--text-secondary)]">
+              Define test cases and manage evaluation scenarios for your AI
+              agents
+            </p>
+          </div>
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--accent)] text-white text-sm font-medium hover:opacity-90 transition-opacity"
+          >
+            <Plus size={14} />
+            New Suite
+          </button>
+        </div>
+        <div className="text-center py-20">
+          <p className="text-[var(--text-muted)] mb-4">
+            No test suites yet. Create one to get started.
+          </p>
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--accent)] text-white text-sm font-medium hover:opacity-90 transition-opacity"
+          >
+            <Plus size={14} />
+            Create First Suite
+          </button>
+        </div>
+        <CreateSuiteModal
+          open={showCreateModal}
+          onClose={() => setShowCreateModal(false)}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="p-8 max-w-[1200px] mx-auto">
@@ -47,16 +134,19 @@ export default function SuitesPage() {
             Define test cases and manage evaluation scenarios for your AI agents
           </p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--accent)] text-white text-sm font-medium hover:opacity-90 transition-opacity">
+        <button
+          onClick={() => setShowCreateModal(true)}
+          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--accent)] text-white text-sm font-medium hover:opacity-90 transition-opacity"
+        >
           <Plus size={14} />
           New Suite
         </button>
       </div>
 
       <div className="space-y-3">
-        {demoSuites.map((suite) => {
+        {suites.map((suite) => {
           const isExpanded = expandedSuite === suite.id;
-          const run = demoRuns.find((r) => r.suiteId === suite.id);
+          const run = getLatestRunForSuite(suite.id);
           const isSimulating = simulatingSuite === suite.id;
 
           return (
@@ -221,6 +311,11 @@ export default function SuitesPage() {
           );
         })}
       </div>
+
+      <CreateSuiteModal
+        open={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+      />
     </div>
   );
 }

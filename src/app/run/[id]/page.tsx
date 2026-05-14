@@ -12,20 +12,77 @@ import {
   ChevronDown,
   ChevronRight,
   AlertTriangle,
+  Loader2,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import StatusBadge from "@/components/StatusBadge";
 import ScoreRing from "@/components/ScoreRing";
-import { demoRuns, demoSuites, demoAIAnalysis } from "@/lib/demo-data";
+import { useData } from "@/lib/data-context";
+import { demoAIAnalysis } from "@/lib/demo-data";
 import { scoreColor, formatRelativeTime } from "@/lib/utils";
+import { useSettings } from "@/lib/settings-context";
+import { AIAnalysis } from "@/lib/types";
 
 export default function RunDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const { isConfigured, toProviderConfig } = useSettings();
+  const { suites, runs } = useData();
   const runId = params.id as string;
-  const run = demoRuns.find((r) => r.id === runId);
+  const run = runs.find((r) => r.id === runId);
   const [expandedCase, setExpandedCase] = useState<string | null>(null);
   const [showAI, setShowAI] = useState(false);
+  const [aiAnalysis, setAiAnalysis] = useState<AIAnalysis | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState("");
+
+  const fetchAnalysis = useCallback(async () => {
+    if (!run) return;
+
+    if (!isConfigured) {
+      setAiAnalysis(demoAIAnalysis);
+      setShowAI(true);
+      return;
+    }
+
+    const config = toProviderConfig();
+    if (!config) return;
+
+    setAiLoading(true);
+    setAiError("");
+    setShowAI(true);
+
+    try {
+      const res = await fetch("/api/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          providerConfig: config,
+          baseline: "previous",
+          candidate: run.agentVersion,
+          testCases: run.results.map((r) => ({
+            id: r.testCaseId,
+            score: r.score,
+            passed: r.passed,
+            error: r.error,
+          })),
+        }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || `HTTP ${res.status}`);
+      }
+
+      const data = await res.json();
+      setAiAnalysis(data);
+    } catch (e) {
+      setAiError(e instanceof Error ? e.message : "Analysis failed");
+      setAiAnalysis(demoAIAnalysis);
+    } finally {
+      setAiLoading(false);
+    }
+  }, [isConfigured, toProviderConfig, run]);
 
   if (!run) {
     return (
@@ -43,8 +100,9 @@ export default function RunDetailPage() {
     );
   }
 
-  const suite = demoSuites.find((s) => s.id === run.suiteId);
+  const suite = suites.find((s) => s.id === run.suiteId);
   const passRate = (run.summary.passed / run.summary.total) * 100;
+  const analysis = aiAnalysis || demoAIAnalysis;
 
   return (
     <div className="p-8 max-w-[1000px] mx-auto">
@@ -68,15 +126,20 @@ export default function RunDetailPage() {
           </p>
         </div>
         <button
-          onClick={() => setShowAI(!showAI)}
-          className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
+          onClick={fetchAnalysis}
+          disabled={aiLoading}
+          className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors disabled:opacity-50"
           style={{
             backgroundColor: showAI ? "var(--accent)" : "var(--accent-bg)",
             color: showAI ? "white" : "var(--accent-light)",
           }}
         >
-          <Sparkles size={12} />
-          AI Analysis
+          {aiLoading ? (
+            <Loader2 size={12} className="animate-spin" />
+          ) : (
+            <Sparkles size={12} />
+          )}
+          {aiLoading ? "Analyzing..." : "AI Analysis"}
         </button>
       </div>
 
@@ -89,8 +152,13 @@ export default function RunDetailPage() {
             strokeWidth={6}
           />
           <div>
-            <p className="text-xs text-[var(--text-muted)] mb-1">Overall Score</p>
-            <p className="text-2xl font-bold" style={{ color: scoreColor(run.summary.avgScore) }}>
+            <p className="text-xs text-[var(--text-muted)] mb-1">
+              Overall Score
+            </p>
+            <p
+              className="text-2xl font-bold"
+              style={{ color: scoreColor(run.summary.avgScore) }}
+            >
               {run.summary.avgScore.toFixed(2)}
             </p>
             <p className="text-xs text-[var(--text-muted)] mt-0.5">
@@ -103,13 +171,19 @@ export default function RunDetailPage() {
             {
               label: "Pass Rate",
               value: `${passRate.toFixed(0)}%`,
-              color: passRate >= 80 ? "var(--green)" : passRate >= 50 ? "var(--yellow)" : "var(--red)",
+              color:
+                passRate >= 80
+                  ? "var(--green)"
+                  : passRate >= 50
+                    ? "var(--yellow)"
+                    : "var(--red)",
               icon: <Shield size={14} />,
             },
             {
               label: "Failed",
               value: `${run.summary.failed}`,
-              color: run.summary.failed === 0 ? "var(--green)" : "var(--red)",
+              color:
+                run.summary.failed === 0 ? "var(--green)" : "var(--red)",
               icon: <XCircle size={14} />,
             },
             {
@@ -146,46 +220,79 @@ export default function RunDetailPage() {
           <div className="flex items-center gap-2 mb-4">
             <Sparkles size={14} className="text-[var(--accent-light)]" />
             <span className="text-sm font-semibold">AI Analysis</span>
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-[var(--accent-bg)] text-[var(--accent-light)]">
-              Claude
-            </span>
+            {isConfigured ? (
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-[var(--green-bg)] text-[var(--green)]">
+                LIVE
+              </span>
+            ) : (
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-[var(--yellow-bg)] text-[var(--yellow)]">
+                DEMO
+              </span>
+            )}
           </div>
-          <p className="text-sm text-[var(--text-secondary)] leading-relaxed mb-4">
-            {demoAIAnalysis.summary}
-          </p>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <h4 className="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wider mb-2">
-                Patterns
-              </h4>
-              <ul className="space-y-1.5">
-                {demoAIAnalysis.regressionPatterns.map((p, i) => (
-                  <li key={i} className="flex items-start gap-2 text-xs text-[var(--text-secondary)]">
-                    <AlertTriangle size={10} className="mt-0.5 shrink-0" style={{ color: "var(--yellow)" }} />
-                    {p}
-                  </li>
-                ))}
-              </ul>
+          {aiLoading ? (
+            <div className="flex items-center gap-2 py-8 justify-center text-sm text-[var(--text-muted)]">
+              <Loader2 size={14} className="animate-spin" />
+              Analyzing with AI...
             </div>
-            <div>
-              <h4 className="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wider mb-2">
-                Fixes
-              </h4>
-              <ul className="space-y-1.5">
-                {demoAIAnalysis.suggestedFixes.map((f, i) => (
-                  <li key={i} className="flex items-start gap-2 text-xs text-[var(--text-secondary)]">
-                    <span
-                      className="mt-0.5 w-3.5 h-3.5 rounded flex items-center justify-center text-[9px] shrink-0"
-                      style={{ backgroundColor: "var(--green-bg)", color: "var(--green)" }}
-                    >
-                      {i + 1}
-                    </span>
-                    {f}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
+          ) : (
+            <>
+              {aiError && (
+                <p className="text-xs text-[var(--red)] bg-[var(--red-bg)] p-2 rounded-lg mb-4">
+                  {aiError} — showing demo analysis
+                </p>
+              )}
+              <p className="text-sm text-[var(--text-secondary)] leading-relaxed mb-4">
+                {analysis.summary}
+              </p>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <h4 className="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wider mb-2">
+                    Patterns
+                  </h4>
+                  <ul className="space-y-1.5">
+                    {analysis.regressionPatterns.map((p, i) => (
+                      <li
+                        key={i}
+                        className="flex items-start gap-2 text-xs text-[var(--text-secondary)]"
+                      >
+                        <AlertTriangle
+                          size={10}
+                          className="mt-0.5 shrink-0"
+                          style={{ color: "var(--yellow)" }}
+                        />
+                        {p}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div>
+                  <h4 className="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wider mb-2">
+                    Fixes
+                  </h4>
+                  <ul className="space-y-1.5">
+                    {analysis.suggestedFixes.map((f, i) => (
+                      <li
+                        key={i}
+                        className="flex items-start gap-2 text-xs text-[var(--text-secondary)]"
+                      >
+                        <span
+                          className="mt-0.5 w-3.5 h-3.5 rounded flex items-center justify-center text-[9px] shrink-0"
+                          style={{
+                            backgroundColor: "var(--green-bg)",
+                            color: "var(--green)",
+                          }}
+                        >
+                          {i + 1}
+                        </span>
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </>
+          )}
         </div>
       )}
 
@@ -197,7 +304,10 @@ export default function RunDetailPage() {
           const isExpanded = expandedCase === result.testCaseId;
 
           return (
-            <div key={result.testCaseId} className="glass-card overflow-hidden">
+            <div
+              key={result.testCaseId}
+              className="glass-card overflow-hidden"
+            >
               <button
                 onClick={() =>
                   setExpandedCase(isExpanded ? null : result.testCaseId)
@@ -206,9 +316,15 @@ export default function RunDetailPage() {
               >
                 <div className="flex items-center gap-3">
                   {isExpanded ? (
-                    <ChevronDown size={14} className="text-[var(--text-muted)]" />
+                    <ChevronDown
+                      size={14}
+                      className="text-[var(--text-muted)]"
+                    />
                   ) : (
-                    <ChevronRight size={14} className="text-[var(--text-muted)]" />
+                    <ChevronRight
+                      size={14}
+                      className="text-[var(--text-muted)]"
+                    />
                   )}
                   <StatusBadge
                     status={result.passed ? "pass" : "fail"}
@@ -233,7 +349,10 @@ export default function RunDetailPage() {
                       }}
                     />
                   </div>
-                  <span className="text-xs font-mono w-7 text-right" style={{ color: scoreColor(result.score) }}>
+                  <span
+                    className="text-xs font-mono w-7 text-right"
+                    style={{ color: scoreColor(result.score) }}
+                  >
                     {result.score.toFixed(2)}
                   </span>
                   <span className="text-xs text-[var(--text-muted)] w-12 text-right">
@@ -270,8 +389,12 @@ export default function RunDetailPage() {
                     <p
                       className="text-xs p-3 rounded-lg leading-relaxed"
                       style={{
-                        backgroundColor: result.passed ? "var(--green-bg)" : "var(--red-bg)",
-                        color: result.passed ? "var(--green)" : "var(--red)",
+                        backgroundColor: result.passed
+                          ? "var(--green-bg)"
+                          : "var(--red-bg)",
+                        color: result.passed
+                          ? "var(--green)"
+                          : "var(--red)",
                       }}
                     >
                       {result.actualOutput}
@@ -289,19 +412,28 @@ export default function RunDetailPage() {
                   )}
                   <div className="flex items-center gap-6 pt-2">
                     <div className="text-xs">
-                      <span className="text-[var(--text-muted)]">Score:</span>{" "}
-                      <span className="font-mono" style={{ color: scoreColor(result.score) }}>
+                      <span className="text-[var(--text-muted)]">
+                        Score:
+                      </span>{" "}
+                      <span
+                        className="font-mono"
+                        style={{ color: scoreColor(result.score) }}
+                      >
                         {result.score.toFixed(2)}
                       </span>
                     </div>
                     <div className="text-xs">
-                      <span className="text-[var(--text-muted)]">Latency:</span>{" "}
+                      <span className="text-[var(--text-muted)]">
+                        Latency:
+                      </span>{" "}
                       <span className="font-mono text-[var(--text-secondary)]">
                         {result.latencyMs}ms
                       </span>
                     </div>
                     <div className="text-xs">
-                      <span className="text-[var(--text-muted)]">Cost:</span>{" "}
+                      <span className="text-[var(--text-muted)]">
+                        Cost:
+                      </span>{" "}
                       <span className="font-mono text-[var(--text-secondary)]">
                         ${result.tokenCost.toFixed(4)}
                       </span>

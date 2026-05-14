@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import {
   GitCompareArrows,
   TrendingUp,
@@ -13,30 +13,44 @@ import {
   ArrowDownRight,
   Minus,
   ChevronDown,
+  Loader2,
 } from "lucide-react";
 import StatusBadge from "@/components/StatusBadge";
 import ScoreRing from "@/components/ScoreRing";
-import { demoRuns, demoAIAnalysis } from "@/lib/demo-data";
+import { useData } from "@/lib/data-context";
+import { demoAIAnalysis } from "@/lib/demo-data";
 import { scoreColor } from "@/lib/utils";
+import { useSettings } from "@/lib/settings-context";
+import { AIAnalysis } from "@/lib/types";
 
 export default function ComparePage() {
-  const [baselineId, setBaselineId] = useState(demoRuns[1].id);
-  const [candidateId, setCandidateId] = useState(demoRuns[0].id);
+  const { isConfigured, toProviderConfig } = useSettings();
+  const { suites, runs } = useData();
+
+  const sortedRuns = useMemo(
+    () =>
+      [...runs].sort(
+        (a, b) =>
+          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      ),
+    [runs]
+  );
+
+  const [baselineId, setBaselineId] = useState(
+    sortedRuns.length > 1 ? sortedRuns[1].id : ""
+  );
+  const [candidateId, setCandidateId] = useState(
+    sortedRuns.length > 0 ? sortedRuns[0].id : ""
+  );
   const [showAnalysis, setShowAnalysis] = useState(false);
   const [showBaselinePicker, setShowBaselinePicker] = useState(false);
   const [showCandidatePicker, setShowCandidatePicker] = useState(false);
+  const [aiAnalysis, setAiAnalysis] = useState<AIAnalysis | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState("");
 
-  const baseline = demoRuns.find((r) => r.id === baselineId) || demoRuns[1];
-  const candidate = demoRuns.find((r) => r.id === candidateId) || demoRuns[0];
-
-  const scoreDelta = candidate.summary.avgScore - baseline.summary.avgScore;
-  const passRateDelta =
-    candidate.summary.passed / candidate.summary.total -
-    baseline.summary.passed / baseline.summary.total;
-  const latencyDelta =
-    candidate.summary.totalLatencyMs - baseline.summary.totalLatencyMs;
-  const costDelta =
-    candidate.summary.totalTokenCost - baseline.summary.totalTokenCost;
+  const baseline = runs.find((r) => r.id === baselineId);
+  const candidate = runs.find((r) => r.id === candidateId);
 
   const getDeltaIcon = (val: number) =>
     val > 0 ? (
@@ -56,9 +70,31 @@ export default function ComparePage() {
         : "var(--red)";
   };
 
+  const scoreDelta =
+    baseline && candidate
+      ? candidate.summary.avgScore - baseline.summary.avgScore
+      : 0;
+  const passRateDelta =
+    baseline && candidate
+      ? candidate.summary.passed / candidate.summary.total -
+        baseline.summary.passed / baseline.summary.total
+      : 0;
+  const latencyDelta =
+    baseline && candidate
+      ? candidate.summary.totalLatencyMs - baseline.summary.totalLatencyMs
+      : 0;
+  const costDelta =
+    baseline && candidate
+      ? candidate.summary.totalTokenCost - baseline.summary.totalTokenCost
+      : 0;
+
   const { regressions, improvements } = useMemo(() => {
+    if (!baseline || !candidate) return { regressions: [], improvements: [] };
+
     const regs: { name: string; baseline: number; candidate: number }[] = [];
     const imps: { name: string; baseline: number; candidate: number }[] = [];
+
+    const baselineSuite = suites.find((s) => s.id === baseline.suiteId);
 
     baseline.results.forEach((br) => {
       const cr = candidate.results.find(
@@ -66,10 +102,8 @@ export default function ComparePage() {
       );
       if (cr) {
         const delta = cr.score - br.score;
-        const tcName = br.testCaseId
-          .replace("tc-1-", "Test #")
-          .replace("tc-2-", "Test #")
-          .replace("tc-3-", "Test #");
+        const tc = baselineSuite?.cases.find((c) => c.id === br.testCaseId);
+        const tcName = tc?.name || br.testCaseId;
         if (delta < -0.05) {
           regs.push({ name: tcName, baseline: br.score, candidate: cr.score });
         } else if (delta > 0.05) {
@@ -79,7 +113,109 @@ export default function ComparePage() {
     });
 
     return { regressions: regs, improvements: imps };
-  }, [baseline, candidate]);
+  }, [baseline, candidate, suites]);
+
+  const fetchAnalysis = useCallback(async () => {
+    if (!isConfigured) {
+      setAiAnalysis(demoAIAnalysis);
+      setShowAnalysis(true);
+      return;
+    }
+
+    const config = toProviderConfig();
+    if (!config || !baseline || !candidate) return;
+
+    setAiLoading(true);
+    setAiError("");
+    setShowAnalysis(true);
+
+    try {
+      const res = await fetch("/api/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          providerConfig: config,
+          baseline: baseline.agentVersion,
+          candidate: candidate.agentVersion,
+          testCases: baseline.results.map((br) => {
+            const cr = candidate.results.find(
+              (r) => r.testCaseId === br.testCaseId
+            );
+            return {
+              id: br.testCaseId,
+              baselineScore: br.score,
+              candidateScore: cr?.score,
+              baselinePassed: br.passed,
+              candidatePassed: cr?.passed,
+            };
+          }),
+        }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || `HTTP ${res.status}`);
+      }
+
+      const data = await res.json();
+      setAiAnalysis(data);
+    } catch (e) {
+      setAiError(e instanceof Error ? e.message : "Analysis failed");
+      setAiAnalysis(demoAIAnalysis);
+    } finally {
+      setAiLoading(false);
+    }
+  }, [isConfigured, toProviderConfig, baseline, candidate]);
+
+  const analysis = aiAnalysis || demoAIAnalysis;
+
+  // Resolve test case name from suite data
+  const getTestCaseName = (testCaseId: string) => {
+    const suite = suites.find(
+      (s) => s.id === baseline?.suiteId || s.id === candidate?.suiteId
+    );
+    const tc = suite?.cases.find((c) => c.id === testCaseId);
+    return tc?.name || testCaseId;
+  };
+
+  if (runs.length < 2) {
+    return (
+      <div className="p-8 max-w-[1200px] mx-auto">
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold mb-1">Compare Runs</h1>
+          <p className="text-sm text-[var(--text-secondary)]">
+            Side-by-side regression analysis between versions
+          </p>
+        </div>
+        <div className="text-center py-20">
+          <p className="text-[var(--text-muted)] mb-2">
+            Need at least 2 runs to compare.
+          </p>
+          <p className="text-xs text-[var(--text-muted)]">
+            Run tests on a suite to generate comparison data.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!baseline || !candidate) {
+    return (
+      <div className="p-8 max-w-[1200px] mx-auto">
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold mb-1">Compare Runs</h1>
+          <p className="text-sm text-[var(--text-secondary)]">
+            Side-by-side regression analysis between versions
+          </p>
+        </div>
+        <div className="text-center py-20">
+          <p className="text-[var(--text-muted)]">
+            Select two runs to compare using the dropdowns above.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-8 max-w-[1200px] mx-auto">
@@ -91,15 +227,26 @@ export default function ComparePage() {
           </p>
         </div>
         <button
-          onClick={() => setShowAnalysis(!showAnalysis)}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+          onClick={fetchAnalysis}
+          disabled={aiLoading}
+          className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
           style={{
-            backgroundColor: showAnalysis ? "var(--accent)" : "var(--accent-bg)",
+            backgroundColor: showAnalysis
+              ? "var(--accent)"
+              : "var(--accent-bg)",
             color: showAnalysis ? "white" : "var(--accent-light)",
           }}
         >
-          <Sparkles size={14} />
-          {showAnalysis ? "Hide AI Analysis" : "AI Analysis"}
+          {aiLoading ? (
+            <Loader2 size={14} className="animate-spin" />
+          ) : (
+            <Sparkles size={14} />
+          )}
+          {aiLoading
+            ? "Analyzing..."
+            : showAnalysis
+              ? "Refresh Analysis"
+              : "AI Analysis"}
         </button>
       </div>
 
@@ -124,7 +271,7 @@ export default function ComparePage() {
             </button>
             {showBaselinePicker && (
               <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1 z-10 glass-card p-1 w-48">
-                {demoRuns.map((r) => (
+                {sortedRuns.map((r) => (
                   <button
                     key={r.id}
                     onClick={() => {
@@ -192,7 +339,7 @@ export default function ComparePage() {
             </button>
             {showCandidatePicker && (
               <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1 z-10 glass-card p-1 w-48">
-                {demoRuns.map((r) => (
+                {sortedRuns.map((r) => (
                   <button
                     key={r.id}
                     onClick={() => {
@@ -263,7 +410,9 @@ export default function ComparePage() {
                 {m.value}
               </span>
             </div>
-            <p className="text-xs text-[var(--text-muted)] mt-1">{m.display}</p>
+            <p className="text-xs text-[var(--text-muted)] mt-1">
+              {m.display}
+            </p>
           </div>
         ))}
       </div>
@@ -276,10 +425,7 @@ export default function ComparePage() {
             const cr = candidate.results.find(
               (r) => r.testCaseId === br.testCaseId
             );
-            const tcName = br.testCaseId
-              .replace("tc-1-", "Test #")
-              .replace("tc-2-", "Test #")
-              .replace("tc-3-", "Test #");
+            const tcName = getTestCaseName(br.testCaseId);
             return (
               <div key={br.testCaseId} className="flex items-center gap-3">
                 <span className="text-xs text-[var(--text-secondary)] w-16 shrink-0">
@@ -308,7 +454,9 @@ export default function ComparePage() {
                 {cr && (
                   <span
                     className="text-xs font-mono w-12 text-right shrink-0"
-                    style={{ color: getDeltaColor(cr.score - br.score) }}
+                    style={{
+                      color: getDeltaColor(cr.score - br.score),
+                    }}
                   >
                     {cr.score - br.score > 0 ? "+" : ""}
                     {(cr.score - br.score).toFixed(2)}
@@ -320,11 +468,17 @@ export default function ComparePage() {
         </div>
         <div className="flex items-center gap-4 mt-3 pt-3 border-t border-[var(--border)]">
           <span className="flex items-center gap-1 text-[10px] text-[var(--text-muted)]">
-            <span className="w-3 h-2 rounded-sm opacity-50" style={{ backgroundColor: "var(--red)" }} />
+            <span
+              className="w-3 h-2 rounded-sm opacity-50"
+              style={{ backgroundColor: "var(--red)" }}
+            />
             Baseline
           </span>
           <span className="flex items-center gap-1 text-[10px] text-[var(--text-muted)]">
-            <span className="w-3 h-2 rounded-sm" style={{ backgroundColor: "var(--green)" }} />
+            <span
+              className="w-3 h-2 rounded-sm"
+              style={{ backgroundColor: "var(--green)" }}
+            />
             Candidate
           </span>
         </div>
@@ -361,10 +515,7 @@ export default function ComparePage() {
                 (r) => r.testCaseId === br.testCaseId
               );
               const delta = cr ? cr.score - br.score : 0;
-              const tcName = br.testCaseId
-                .replace("tc-1-", "Test #")
-                .replace("tc-2-", "Test #")
-                .replace("tc-3-", "Test #");
+              const tcName = getTestCaseName(br.testCaseId);
               return (
                 <tr
                   key={br.testCaseId}
@@ -485,81 +636,101 @@ export default function ComparePage() {
           <div className="flex items-center gap-2 mb-4">
             <Sparkles size={16} className="text-[var(--accent-light)]" />
             <h3 className="text-base font-semibold">AI-Powered Analysis</h3>
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-[var(--accent-bg)] text-[var(--accent-light)]">
-              Claude
-            </span>
-          </div>
-          <div className="space-y-4">
-            <div>
-              <p className="text-sm text-[var(--text-primary)] leading-relaxed">
-                {demoAIAnalysis.summary}
-              </p>
-            </div>
-            {demoAIAnalysis.regressionPatterns.length > 0 && (
-              <div>
-                <h4 className="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wider mb-2">
-                  Identified Patterns
-                </h4>
-                <ul className="space-y-1.5">
-                  {demoAIAnalysis.regressionPatterns.map((p, i) => (
-                    <li
-                      key={i}
-                      className="flex items-start gap-2 text-sm text-[var(--text-secondary)]"
-                    >
-                      <AlertTriangle
-                        size={12}
-                        className="mt-1 shrink-0"
-                        style={{ color: "var(--yellow)" }}
-                      />
-                      {p}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-            {demoAIAnalysis.suggestedFixes.length > 0 && (
-              <div>
-                <h4 className="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wider mb-2">
-                  Suggested Fixes
-                </h4>
-                <ul className="space-y-1.5">
-                  {demoAIAnalysis.suggestedFixes.map((f, i) => (
-                    <li
-                      key={i}
-                      className="flex items-start gap-2 text-sm text-[var(--text-secondary)]"
-                    >
-                      <span
-                        className="mt-0.5 w-4 h-4 rounded flex items-center justify-center text-[10px] shrink-0"
-                        style={{
-                          backgroundColor: "var(--green-bg)",
-                          color: "var(--green)",
-                        }}
-                      >
-                        {i + 1}
-                      </span>
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-            <div className="flex items-center gap-2 pt-2 border-t border-[var(--border)]">
-              <span className="text-xs text-[var(--text-muted)]">
-                Risk Assessment:
+            {isConfigured ? (
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-[var(--green-bg)] text-[var(--green)]">
+                LIVE
               </span>
-              <StatusBadge
-                status={
-                  demoAIAnalysis.riskAssessment === "low"
-                    ? "pass"
-                    : demoAIAnalysis.riskAssessment === "medium"
-                      ? "warning"
-                      : "fail"
-                }
-                label={demoAIAnalysis.riskAssessment.toUpperCase()}
-                size="md"
-              />
-            </div>
+            ) : (
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-[var(--yellow-bg)] text-[var(--yellow)]">
+                DEMO
+              </span>
+            )}
           </div>
+          {aiLoading ? (
+            <div className="flex items-center gap-2 py-8 justify-center text-sm text-[var(--text-muted)]">
+              <Loader2 size={14} className="animate-spin" />
+              Analyzing with AI...
+            </div>
+          ) : (
+            <>
+              {aiError && (
+                <p className="text-xs text-[var(--red)] bg-[var(--red-bg)] p-2 rounded-lg mb-4">
+                  {aiError} — showing demo analysis
+                </p>
+              )}
+              <div className="space-y-4">
+                <div>
+                  <p className="text-sm text-[var(--text-primary)] leading-relaxed">
+                    {analysis.summary}
+                  </p>
+                </div>
+                {analysis.regressionPatterns.length > 0 && (
+                  <div>
+                    <h4 className="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wider mb-2">
+                      Identified Patterns
+                    </h4>
+                    <ul className="space-y-1.5">
+                      {analysis.regressionPatterns.map((p, i) => (
+                        <li
+                          key={i}
+                          className="flex items-start gap-2 text-sm text-[var(--text-secondary)]"
+                        >
+                          <AlertTriangle
+                            size={12}
+                            className="mt-1 shrink-0"
+                            style={{ color: "var(--yellow)" }}
+                          />
+                          {p}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {analysis.suggestedFixes.length > 0 && (
+                  <div>
+                    <h4 className="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wider mb-2">
+                      Suggested Fixes
+                    </h4>
+                    <ul className="space-y-1.5">
+                      {analysis.suggestedFixes.map((f, i) => (
+                        <li
+                          key={i}
+                          className="flex items-start gap-2 text-sm text-[var(--text-secondary)]"
+                        >
+                          <span
+                            className="mt-0.5 w-4 h-4 rounded flex items-center justify-center text-[10px] shrink-0"
+                            style={{
+                              backgroundColor: "var(--green-bg)",
+                              color: "var(--green)",
+                            }}
+                          >
+                            {i + 1}
+                          </span>
+                          {f}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                <div className="flex items-center gap-2 pt-2 border-t border-[var(--border)]">
+                  <span className="text-xs text-[var(--text-muted)]">
+                    Risk Assessment:
+                  </span>
+                  <StatusBadge
+                    status={
+                      analysis.riskAssessment === "low"
+                        ? "pass"
+                        : analysis.riskAssessment === "medium"
+                          ? "warning"
+                          : "fail"
+                    }
+                    label={analysis.riskAssessment.toUpperCase()}
+                    size="md"
+                  />
+                </div>
+              </div>
+            </>
+          )}
         </div>
       )}
     </div>

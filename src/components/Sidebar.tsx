@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useMemo } from "react";
 import {
   LayoutDashboard,
   TestTube2,
@@ -9,21 +10,34 @@ import {
   FlaskConical,
   Zap,
   Activity,
+  Settings2,
 } from "lucide-react";
 import clsx from "clsx";
-import { demoRuns } from "@/lib/demo-data";
+import { useData } from "@/lib/data-context";
 
 const navItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
   { href: "/suites", label: "Test Suites", icon: TestTube2 },
   { href: "/compare", label: "Compare Runs", icon: GitCompareArrows },
+  { href: "/settings", label: "Settings", icon: Settings2 },
 ];
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const { runs } = useData();
+
+  const sortedRuns = useMemo(
+    () =>
+      [...runs].sort(
+        (a, b) =>
+          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      ),
+    [runs]
+  );
 
   const isActive = (href: string) => {
     if (href === "/") return pathname === "/";
+    if (href === "/settings") return pathname === "/settings";
     return pathname.startsWith(href) || pathname.startsWith("/run");
   };
 
@@ -66,34 +80,40 @@ export default function Sidebar() {
         <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider px-3 mt-5 mb-2">
           Recent Runs
         </p>
-        {demoRuns.map((run) => (
-          <Link
-            key={run.id}
-            href={`/run/${run.id}`}
-            className={clsx(
-              "flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs transition-all",
-              pathname === `/run/${run.id}`
-                ? "bg-[var(--accent-bg)] text-[var(--accent-light)]"
-                : "text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-[var(--bg-card)]"
-            )}
-          >
-            <Activity size={12} className="shrink-0" />
-            <span className="truncate flex-1">{run.suiteName}</span>
-            <span
-              className="font-mono text-[10px] shrink-0"
-              style={{
-                color:
-                  run.summary.avgScore > 0.7
-                    ? "var(--green)"
-                    : run.summary.avgScore > 0.4
-                      ? "var(--yellow)"
-                      : "var(--red)",
-              }}
+        {sortedRuns.length === 0 ? (
+          <p className="text-[10px] text-[var(--text-muted)] px-3 py-2">
+            No runs yet
+          </p>
+        ) : (
+          sortedRuns.map((run) => (
+            <Link
+              key={run.id}
+              href={`/run/${run.id}`}
+              className={clsx(
+                "flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs transition-all",
+                pathname === `/run/${run.id}`
+                  ? "bg-[var(--accent-bg)] text-[var(--accent-light)]"
+                  : "text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-[var(--bg-card)]"
+              )}
             >
-              {run.summary.avgScore.toFixed(2)}
-            </span>
-          </Link>
-        ))}
+              <Activity size={12} className="shrink-0" />
+              <span className="truncate flex-1">{run.suiteName}</span>
+              <span
+                className="font-mono text-[10px] shrink-0"
+                style={{
+                  color:
+                    run.summary.avgScore > 0.7
+                      ? "var(--green)"
+                      : run.summary.avgScore > 0.4
+                        ? "var(--yellow)"
+                        : "var(--red)",
+                }}
+              >
+                {run.summary.avgScore.toFixed(2)}
+              </span>
+            </Link>
+          ))
+        )}
       </nav>
 
       <div className="px-4 py-4 border-t border-[var(--border)]">
@@ -105,7 +125,8 @@ export default function Sidebar() {
             </span>
           </div>
           <p className="text-[10px] text-[var(--text-muted)] leading-relaxed">
-            AI coding as both means &amp; product — built entirely with Claude Code
+            AI coding as both means &amp; product — built entirely with Claude
+            Code
           </p>
         </div>
       </div>
