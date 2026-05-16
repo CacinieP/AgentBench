@@ -7,7 +7,7 @@ export interface TestCase {
   evaluator?: EvaluatorConfig;
 }
 
-export type EvaluatorType = "exact_match" | "contains" | "regex" | "json_schema" | "llm_judge";
+export type EvaluatorType = "exact_match" | "contains" | "regex" | "json_schema" | "llm_judge" | "code_test";
 
 export interface EvaluatorConfig {
   type: EvaluatorType;
@@ -28,6 +28,8 @@ export interface TestResult {
   error?: string;
   judgeRationale?: string;
   evaluatorType?: EvaluatorType;
+  /** True when the evaluator fell back to a simpler method */
+  fallback?: boolean;
 }
 
 export interface TestRun {

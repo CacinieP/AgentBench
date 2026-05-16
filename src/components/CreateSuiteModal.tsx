@@ -1,9 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { X, Plus, Trash2 } from "lucide-react";
 import { useData } from "@/lib/data-context";
-import { useSettings } from "@/lib/settings-context";
 import { TestSuite, TestCase, EvaluatorType } from "@/lib/types";
 
 interface CreateSuiteModalProps {
@@ -42,6 +41,24 @@ export default function CreateSuiteModal({
   const [cases, setCases] = useState<DraftCase[]>([{ ...emptyCase }]);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  const handleClose = useCallback(() => {
+    setName("");
+    setDescription("");
+    setAgentType("chatbot");
+    setCases([{ ...emptyCase }]);
+    setErrors({});
+    onClose();
+  }, [onClose]);
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") handleClose();
+    };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, [open, handleClose]);
+
   if (!open) return null;
 
   const updateCase = (index: number, field: keyof DraftCase, value: string) => {
@@ -70,13 +87,13 @@ export default function CreateSuiteModal({
 
   const validate = (): boolean => {
     const e: Record<string, string> = {};
-    if (!name.trim()) e.name = "Name is required";
-    if (!description.trim()) e.description = "Description is required";
+    if (!name.trim()) e.name = "名称为必填项";
+    if (!description.trim()) e.description = "描述为必填项";
     cases.forEach((c, i) => {
-      if (!c.name.trim()) e[`case-${i}-name`] = "Required";
-      if (!c.input.trim()) e[`case-${i}-input`] = "Required";
+      if (!c.name.trim()) e[`case-${i}-name`] = "必填";
+      if (!c.input.trim()) e[`case-${i}-input`] = "必填";
       if (!c.expectedOutput.trim())
-        e[`case-${i}-expectedOutput`] = "Required";
+        e[`case-${i}-expectedOutput`] = "必填";
     });
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -111,15 +128,6 @@ export default function CreateSuiteModal({
     onClose();
   };
 
-  const handleClose = () => {
-    setName("");
-    setDescription("");
-    setAgentType("chatbot");
-    setCases([{ ...emptyCase }]);
-    setErrors({});
-    onClose();
-  };
-
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
@@ -130,7 +138,7 @@ export default function CreateSuiteModal({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--border)]">
-          <h2 className="text-base font-semibold">New Test Suite</h2>
+          <h2 className="text-base font-semibold">新建测试套件</h2>
           <button
             onClick={handleClose}
             className="p-1 text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
@@ -151,7 +159,7 @@ export default function CreateSuiteModal({
                 setName(e.target.value);
                 if (errors.name) setErrors((prev) => ({ ...prev, name: "" }));
               }}
-              placeholder="e.g. Customer Support Agent"
+              placeholder="例如：客服 Agent"
               className="w-full bg-[var(--bg-secondary)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--accent)] transition-colors"
             />
             {errors.name && (
@@ -172,7 +180,7 @@ export default function CreateSuiteModal({
                 if (errors.description)
                   setErrors((prev) => ({ ...prev, description: "" }));
               }}
-              placeholder="What does this test suite evaluate?"
+              placeholder="这个测试套件用于评测什么？"
               rows={2}
               className="w-full bg-[var(--bg-secondary)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--accent)] transition-colors resize-none"
             />
@@ -185,7 +193,7 @@ export default function CreateSuiteModal({
 
           <div>
             <label className="text-xs text-[var(--text-muted)] uppercase tracking-wider mb-1.5 block">
-              Agent Type
+              Agent 类型
             </label>
             <select
               value={agentType}
@@ -193,9 +201,9 @@ export default function CreateSuiteModal({
               className="w-full bg-[var(--bg-secondary)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent)] transition-colors"
             >
               <option value="chatbot">Chatbot</option>
-              <option value="code-review">Code Review</option>
-              <option value="extraction">Data Extraction</option>
-              <option value="other">Other</option>
+              <option value="code-review">代码审查</option>
+              <option value="extraction">数据提取</option>
+              <option value="other">其他</option>
             </select>
           </div>
 
@@ -209,7 +217,7 @@ export default function CreateSuiteModal({
                 className="flex items-center gap-1 text-[10px] px-2 py-1 rounded bg-[var(--accent-bg)] text-[var(--accent-light)] hover:opacity-80 transition-colors"
               >
                 <Plus size={10} />
-                Add Case
+                新增用例
               </button>
             </div>
 
@@ -221,7 +229,7 @@ export default function CreateSuiteModal({
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] text-[var(--text-muted)] font-medium">
-                      Case #{i + 1}
+                      用例 #{i + 1}
                     </span>
                     {cases.length > 1 && (
                       <button
@@ -236,7 +244,7 @@ export default function CreateSuiteModal({
                     type="text"
                     value={tc.name}
                     onChange={(e) => updateCase(i, "name", e.target.value)}
-                    placeholder="Test case name"
+                    placeholder="测试用例名称"
                     className="w-full bg-[var(--bg-secondary)] border border-[var(--border)] rounded-md px-2.5 py-1.5 text-xs text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--accent)] transition-colors"
                   />
                   {errors[`case-${i}-name`] && (
@@ -247,7 +255,7 @@ export default function CreateSuiteModal({
                   <textarea
                     value={tc.input}
                     onChange={(e) => updateCase(i, "input", e.target.value)}
-                    placeholder="Input text"
+                    placeholder="输入文本"
                     rows={2}
                     className="w-full bg-[var(--bg-secondary)] border border-[var(--border)] rounded-md px-2.5 py-1.5 text-xs text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--accent)] transition-colors resize-none"
                   />
@@ -261,7 +269,7 @@ export default function CreateSuiteModal({
                     onChange={(e) =>
                       updateCase(i, "expectedOutput", e.target.value)
                     }
-                    placeholder="Expected output / behavior"
+                    placeholder="预期输出 / 行为"
                     rows={2}
                     className="w-full bg-[var(--bg-secondary)] border border-[var(--border)] rounded-md px-2.5 py-1.5 text-xs text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--accent)] transition-colors resize-none"
                   />
@@ -274,22 +282,23 @@ export default function CreateSuiteModal({
                     type="text"
                     value={tc.category}
                     onChange={(e) => updateCase(i, "category", e.target.value)}
-                    placeholder="Category (e.g. billing, security)"
+                    placeholder="分类（例如：账单、安全）"
                     className="w-full bg-[var(--bg-secondary)] border border-[var(--border)] rounded-md px-2.5 py-1.5 text-xs text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--accent)] transition-colors"
                   />
                   <div className="flex items-center gap-2">
-                    <label className="text-[10px] text-[var(--text-muted)] shrink-0">Evaluator:</label>
+                    <label className="text-[10px] text-[var(--text-muted)] shrink-0">评测器:</label>
                     <select
                       value={tc.evaluatorType}
                       onChange={(e) => updateCase(i, "evaluatorType", e.target.value)}
                       className="flex-1 bg-[var(--bg-secondary)] border border-[var(--border)] rounded-md px-2 py-1 text-[10px] text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent)] transition-colors"
                     >
-                      <option value="">Default</option>
-                      <option value="contains">Contains</option>
-                      <option value="exact_match">Exact Match</option>
-                      <option value="regex">Regex</option>
+                      <option value="">默认</option>
+                      <option value="contains">包含匹配</option>
+                      <option value="exact_match">精确匹配</option>
+                      <option value="regex">正则</option>
                       <option value="json_schema">JSON Schema</option>
-                      <option value="llm_judge">LLM Judge</option>
+                      <option value="llm_judge">LLM 评判</option>
+                      <option value="code_test">代码测试</option>
                     </select>
                   </div>
                 </div>
@@ -309,7 +318,7 @@ export default function CreateSuiteModal({
             onClick={handleSubmit}
             className="px-4 py-2 rounded-lg bg-[var(--accent)] text-white text-sm font-medium hover:opacity-90 transition-opacity"
           >
-            Create Suite
+            创建套件
           </button>
         </div>
       </div>

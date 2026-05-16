@@ -13,6 +13,7 @@ import {
   ChevronRight,
   AlertTriangle,
   Loader2,
+  Trash2,
 } from "lucide-react";
 import { useState, useCallback } from "react";
 import StatusBadge from "@/components/StatusBadge";
@@ -27,7 +28,7 @@ export default function RunDetailPage() {
   const params = useParams();
   const router = useRouter();
   const { isConfigured, toProviderConfig } = useSettings();
-  const { suites, runs } = useData();
+  const { suites, runs, deleteRun } = useData();
   const runId = params.id as string;
   const run = runs.find((r) => r.id === runId);
   const [expandedCase, setExpandedCase] = useState<string | null>(null);
@@ -35,6 +36,7 @@ export default function RunDetailPage() {
   const [aiAnalysis, setAiAnalysis] = useState<AIAnalysis | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState("");
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const fetchAnalysis = useCallback(async () => {
     if (!run) return;
@@ -88,12 +90,12 @@ export default function RunDetailPage() {
     return (
       <div className="p-8 max-w-[1000px] mx-auto">
         <div className="flex flex-col items-center justify-center py-20">
-          <p className="text-[var(--text-muted)] mb-4">Run not found</p>
+          <p className="text-[var(--text-muted)] mb-4">运行记录未找到</p>
           <Link
             href="/"
             className="text-[var(--accent-light)] text-sm hover:underline"
           >
-            Back to Dashboard
+            返回面板
           </Link>
         </div>
       </div>
@@ -122,11 +124,11 @@ export default function RunDetailPage() {
             </span>
             {!run.agentVersion.startsWith("sim-") ? (
               <span className="text-[10px] px-2 py-0.5 rounded-full bg-[var(--green-bg)] text-[var(--green)]">
-                LIVE
+                真实
               </span>
             ) : (
               <span className="text-[10px] px-2 py-0.5 rounded-full bg-[var(--yellow-bg)] text-[var(--yellow)]">
-                SIMULATED
+                模拟
               </span>
             )}
           </div>
@@ -148,7 +150,15 @@ export default function RunDetailPage() {
           ) : (
             <Sparkles size={12} />
           )}
-          {aiLoading ? "Analyzing..." : "AI Analysis"}
+          {aiLoading ? "分析中..." : "AI 分析"}
+        </button>
+        <button
+          onClick={() => setShowDeleteConfirm(true)}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs transition-colors text-[var(--text-muted)] hover:text-[var(--red)] hover:bg-[var(--red-bg)]"
+          aria-label="Delete this run"
+        >
+          <Trash2 size={12} />
+          删除
         </button>
       </div>
 
@@ -162,7 +172,7 @@ export default function RunDetailPage() {
           />
           <div>
             <p className="text-xs text-[var(--text-muted)] mb-1">
-              Overall Score
+              综合得分
             </p>
             <p
               className="text-2xl font-bold"
@@ -171,14 +181,14 @@ export default function RunDetailPage() {
               {run.summary.avgScore.toFixed(2)}
             </p>
             <p className="text-xs text-[var(--text-muted)] mt-0.5">
-              {run.summary.passed} of {run.summary.total} passed
+              {run.summary.passed} / {run.summary.total} 通过
             </p>
           </div>
         </div>
         <div className="grid grid-cols-4 gap-3 flex-1">
           {[
             {
-              label: "Pass Rate",
+              label: "通过率",
               value: `${passRate.toFixed(0)}%`,
               color:
                 passRate >= 80
@@ -189,20 +199,20 @@ export default function RunDetailPage() {
               icon: <Shield size={14} />,
             },
             {
-              label: "Failed",
+              label: "失败",
               value: `${run.summary.failed}`,
               color:
                 run.summary.failed === 0 ? "var(--green)" : "var(--red)",
               icon: <XCircle size={14} />,
             },
             {
-              label: "Latency",
+              label: "延迟",
               value: `${(run.summary.totalLatencyMs / 1000).toFixed(1)}s`,
               color: "var(--text-secondary)",
               icon: <Clock size={14} />,
             },
             {
-              label: "Cost",
+              label: "费用",
               value: `$${run.summary.totalTokenCost.toFixed(4)}`,
               color: "var(--text-secondary)",
               icon: <DollarSign size={14} />,
@@ -228,27 +238,27 @@ export default function RunDetailPage() {
         <div className="glass-card p-5 mb-6 fade-in">
           <div className="flex items-center gap-2 mb-4">
             <Sparkles size={14} className="text-[var(--accent-light)]" />
-            <span className="text-sm font-semibold">AI Analysis</span>
+            <span className="text-sm font-semibold">AI 分析</span>
             {isConfigured ? (
               <span className="text-[10px] px-2 py-0.5 rounded-full bg-[var(--green-bg)] text-[var(--green)]">
-                LIVE
+                真实
               </span>
             ) : (
               <span className="text-[10px] px-2 py-0.5 rounded-full bg-[var(--yellow-bg)] text-[var(--yellow)]">
-                DEMO
+                演示
               </span>
             )}
           </div>
           {aiLoading ? (
             <div className="flex items-center gap-2 py-8 justify-center text-sm text-[var(--text-muted)]">
               <Loader2 size={14} className="animate-spin" />
-              Analyzing with AI...
+              AI 分析中...
             </div>
           ) : (
             <>
               {aiError && (
                 <p className="text-xs text-[var(--red)] bg-[var(--red-bg)] p-2 rounded-lg mb-4">
-                  {aiError} — showing demo analysis
+                  {aiError} — 显示演示分析
                 </p>
               )}
               <p className="text-sm text-[var(--text-secondary)] leading-relaxed mb-4">
@@ -257,7 +267,7 @@ export default function RunDetailPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <h4 className="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wider mb-2">
-                    Patterns
+                    模式
                   </h4>
                   <ul className="space-y-1.5">
                     {analysis.regressionPatterns.map((p, i) => (
@@ -277,7 +287,7 @@ export default function RunDetailPage() {
                 </div>
                 <div>
                   <h4 className="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wider mb-2">
-                    Fixes
+                    修复
                   </h4>
                   <ul className="space-y-1.5">
                     {analysis.suggestedFixes.map((f, i) => (
@@ -307,7 +317,7 @@ export default function RunDetailPage() {
 
       {/* Test results */}
       <div className="space-y-2">
-        <h3 className="text-sm font-semibold mb-3">Test Results</h3>
+        <h3 className="text-sm font-semibold mb-3">测试结果</h3>
         {run.results.map((result) => {
           const tc = suite?.cases.find((c) => c.id === result.testCaseId);
           const isExpanded = expandedCase === result.testCaseId;
@@ -390,7 +400,7 @@ export default function RunDetailPage() {
                   </div>
                   <div>
                     <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider mb-1">
-                      Expected
+                      预期输出
                     </p>
                     <p className="text-xs text-[var(--text-secondary)] bg-[var(--bg-secondary)] p-3 rounded-lg leading-relaxed max-h-40 overflow-y-auto whitespace-pre-wrap">
                       {tc?.expectedOutput || "N/A"}
@@ -398,7 +408,7 @@ export default function RunDetailPage() {
                   </div>
                   <div>
                     <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider mb-1">
-                      Actual Output
+                      实际输出
                     </p>
                     <p
                       className="text-xs p-3 rounded-lg leading-relaxed whitespace-pre-wrap max-h-60 overflow-y-auto"
@@ -411,13 +421,13 @@ export default function RunDetailPage() {
                           : "var(--red)",
                       }}
                     >
-                      {result.actualOutput || "(No output — agent call failed)"}
+                      {result.actualOutput || "(无输出 — Agent 调用失败)"}
                     </p>
                   </div>
                   {result.error && (
                     <div>
                       <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider mb-1">
-                        Failure Analysis
+                        失败分析
                       </p>
                       <p className="text-xs text-[var(--red)] bg-[var(--red-bg)] p-3 rounded-lg leading-relaxed">
                         {result.error}
@@ -426,9 +436,16 @@ export default function RunDetailPage() {
                   )}
                   {result.judgeRationale && (
                     <div>
-                      <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider mb-1">
-                        Evaluator Rationale
-                      </p>
+                      <div className="flex items-center gap-2 mb-1">
+                        <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider">
+                          评测理由
+                        </p>
+                        {result.fallback && (
+                          <span className="text-[9px] px-1.5 py-0.5 rounded bg-[var(--yellow-bg)] text-[var(--yellow)] font-medium">
+                            回退评测
+                          </span>
+                        )}
+                      </div>
                       <p className="text-xs text-[var(--text-secondary)] bg-[var(--bg-secondary)] p-3 rounded-lg leading-relaxed">
                         {result.judgeRationale}
                       </p>
@@ -436,7 +453,7 @@ export default function RunDetailPage() {
                   )}
                   <div className="flex items-center gap-6 pt-2 flex-wrap">
                     <div className="text-xs">
-                      <span className="text-[var(--text-muted)]">Score:</span>{" "}
+                      <span className="text-[var(--text-muted)]">得分:</span>{" "}
                       <span
                         className="font-mono"
                         style={{ color: scoreColor(result.score) }}
@@ -445,20 +462,20 @@ export default function RunDetailPage() {
                       </span>
                     </div>
                     <div className="text-xs">
-                      <span className="text-[var(--text-muted)]">Latency:</span>{" "}
+                      <span className="text-[var(--text-muted)]">延迟:</span>{" "}
                       <span className="font-mono text-[var(--text-secondary)]">
                         {result.latencyMs}ms
                       </span>
                     </div>
                     <div className="text-xs">
-                      <span className="text-[var(--text-muted)]">Cost:</span>{" "}
+                      <span className="text-[var(--text-muted)]">费用:</span>{" "}
                       <span className="font-mono text-[var(--text-secondary)]">
                         ${result.tokenCost.toFixed(4)}
                       </span>
                     </div>
                     {result.evaluatorType && (
                       <div className="text-xs">
-                        <span className="text-[var(--text-muted)]">Evaluator:</span>{" "}
+                        <span className="text-[var(--text-muted)]">评测器:</span>{" "}
                         <span className="font-mono text-[var(--accent-light)]">
                           {result.evaluatorType}
                         </span>
@@ -471,6 +488,41 @@ export default function RunDetailPage() {
           );
         })}
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      {showDeleteConfirm && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+          onClick={() => setShowDeleteConfirm(false)}
+        >
+          <div
+            className="glass-card w-full max-w-[360px] mx-4 p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-base font-semibold mb-2">删除运行</h3>
+            <p className="text-sm text-[var(--text-secondary)] mb-4">
+              这将永久删除该测试运行及其所有结果。此操作不可撤销。
+            </p>
+            <div className="flex items-center justify-end gap-2">
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                className="px-4 py-2 rounded-lg text-sm text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
+              >
+                取消
+              </button>
+              <button
+                onClick={() => {
+                  deleteRun(runId);
+                  router.push("/");
+                }}
+                className="px-4 py-2 rounded-lg text-sm font-medium bg-[var(--red)] text-white hover:opacity-90 transition-opacity"
+              >
+                删除
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

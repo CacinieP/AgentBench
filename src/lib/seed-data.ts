@@ -4,139 +4,139 @@ export function createSeedSuites(): TestSuite[] {
   return [
     {
       id: "suite-1",
-      name: "Customer Support Agent",
+      name: "客服 Agent",
       description:
-        "Evaluates response quality for a customer support chatbot handling billing, returns, and shipping queries.",
+        "评估客服聊天机器人的响应质量，涵盖账单、退货和物流查询。",
       agentType: "chatbot",
       cases: [
         {
           id: "tc-1-1",
-          name: "Billing dispute resolution",
-          input: "I was charged twice for my order #12345. The amount is $49.99 each. Please refund the duplicate charge.",
+          name: "账单纠纷处理",
+          input: "我的订单 #12345 被重复扣款了。每笔 $49.99。请退还重复扣款的金额。",
           expectedOutput:
-            "Should acknowledge the duplicate charge, provide empathy, explain refund process, and give timeline (3-5 business days). Should ask for payment method confirmation.",
+            "重复扣款;同理心;退款;3-5 个工作日;支付方式",
           category: "billing",
         },
         {
           id: "tc-1-2",
-          name: "Return policy inquiry",
-          input: "Can I return a product I bought 35 days ago? It's still sealed.",
+          name: "退货政策咨询",
+          input: "35 天前买的商品还能退货吗？产品未拆封。",
           expectedOutput:
-            "Should explain standard 30-day policy, note the item is sealed so may qualify for exception, and provide next steps to contact support for manual review.",
+            "30 天;未拆封;例外;人工审核;订单号",
           category: "returns",
         },
         {
           id: "tc-1-3",
-          name: "Shipping delay complaint",
-          input: "My order was supposed to arrive 3 days ago and tracking hasn't updated. Order #67890.",
+          name: "物流延迟投诉",
+          input: "我的订单应该在 3 天前到达，物流追踪一直没更新。订单号 #67890。",
           expectedOutput:
-            "Should check order status, apologize for delay, offer to investigate with carrier, and provide resolution options (wait, reship, or refund).",
+            "道歉;调查;承运商;补发;退款",
           category: "shipping",
         },
         {
           id: "tc-1-4",
-          name: "Product defect report",
-          input: "The laptop I received has a cracked screen. I have photos. What do I do?",
+          name: "产品缺陷报告",
+          input: "我收到的笔记本电脑屏幕碎了。我有照片。该怎么办？",
           expectedOutput:
-            "Should express empathy, request photo upload, explain damage claim process, and offer immediate replacement or refund options.",
+            "同理心;照片;换货;退款;保修",
           category: "returns",
         },
         {
           id: "tc-1-5",
-          name: "Subscription cancellation",
-          input: "I want to cancel my Premium subscription effective immediately. I don't want to be charged again.",
+          name: "订阅取消",
+          input: "我想立即取消 Premium 订阅，不要再扣款了。",
           expectedOutput:
-            "Should confirm subscription details, explain cancellation terms (no further charges), ask for reason, and provide confirmation with effective date.",
+            "取消;不再收费;生效日期;确认",
           category: "billing",
         },
         {
           id: "tc-1-6",
-          name: "Multi-item order status",
-          input: "I ordered 5 items but only received 3. Where are the other 2?",
+          name: "多商品订单状态",
+          input: "我订了 5 件商品，只收到 3 件。另外 2 件在哪里？",
           expectedOutput:
-            "Should verify order contains 5 items, check which were shipped, explain split shipment if applicable, and provide tracking for remaining items.",
+            "5 件;3 件;分开发货;物流单号",
           category: "shipping",
         },
       ],
     },
     {
       id: "suite-2",
-      name: "Code Review Agent",
+      name: "代码审查 Agent",
       description:
-        "Tests an AI agent that reviews pull requests for security issues, style violations, and correctness.",
+        "测试用于审查 Pull Requests 的 AI Agent，检测安全问题、代码风格违规和正确性。",
       agentType: "code-review",
       cases: [
         {
           id: "tc-2-1",
-          name: "SQL injection detection",
-          input: "Review this code: const query = `SELECT * FROM users WHERE id = ${req.params.id}`; db.query(query);",
+          name: "SQL 注入检测",
+          input: "审查代码：const query = `SELECT * FROM users WHERE id = ${req.params.id}`; db.query(query);",
           expectedOutput:
-            "Should flag SQL injection vulnerability, explain the risk, and suggest parameterized query replacement.",
+            "SQL 注入;参数化查询;安全风险",
           category: "security",
         },
         {
           id: "tc-2-2",
-          name: "Missing error handling",
-          input: "Review: async function getUser(id) { const user = await User.findById(id); return user.name; }",
+          name: "缺少错误处理",
+          input: "审查：async function getUser(id) { const user = await User.findById(id); return user.name; }",
           expectedOutput:
-            "Should flag missing null check and error handling. Should suggest try/catch and null return handling.",
+            "空值检查;错误处理;try/catch;null",
           category: "correctness",
         },
         {
           id: "tc-2-3",
-          name: "Performance anti-pattern",
-          input: "Review: for (const id of ids) { await fetch(`/api/users/${id}`); }",
+          name: "性能反模式",
+          input: "审查：for (const id of ids) { await fetch(`/api/users/${id}`); }",
           expectedOutput:
-            "Should flag sequential await in loop as N+1 pattern. Should suggest Promise.all or batch endpoint.",
+            "N+1;Promise.all;并行;批量",
           category: "performance",
         },
         {
           id: "tc-2-4",
-          name: "Hardcoded credentials",
-          input: "Review: const AWS_SECRET = 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY'; const client = new AWS.Client({ secret: AWS_SECRET });",
+          name: "硬编码密钥",
+          input: "审查：const AWS_SECRET = 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY'; const client = new AWS.Client({ secret: AWS_SECRET });",
           expectedOutput:
-            "Should immediately flag hardcoded secret as critical security issue. Should suggest env variables or secrets manager.",
+            "硬编码;密钥;安全;环境变量;密钥管理",
           category: "security",
         },
         {
           id: "tc-2-5",
-          name: "Correct refactoring",
-          input: "Review: Changed `if (x == null)` to `if (x === null || x === undefined)` and added unit tests.",
+          name: "正确的重构",
+          input: "审查：将 `if (x == null)` 改为 `if (x === null || x === undefined)` 并添加了单元测试。",
           expectedOutput:
-            "Should recognize this as a valid improvement (strict equality). Should note that `x == null` is actually equivalent in JS, so the change is redundant but harmless.",
+            "等价;冗余;无害;测试",
           category: "correctness",
         },
       ],
     },
     {
       id: "suite-3",
-      name: "Data Extraction Agent",
+      name: "数据提取 Agent",
       description:
-        "Evaluates an agent that extracts structured data from unstructured text (invoices, receipts, emails).",
+        "测试从非结构化文本（发票、收据、邮件）中提取结构化数据的 AI Agent。",
       agentType: "extraction",
       cases: [
         {
           id: "tc-3-1",
-          name: "Invoice total extraction",
-          input: "Invoice #INV-2024-001\nDate: March 15, 2026\nSubtotal: $1,250.00\nTax (8.5%): $106.25\nShipping: $15.00\nTOTAL DUE: $1,371.25",
+          name: "发票金额提取",
+          input: "发票 #INV-2024-001\n日期: 2026年3月15日\n小计: $1,250.00\n税费 (8.5%): $106.25\n运费: $15.00\n应付总额: $1,371.25",
           expectedOutput:
-            "Should extract: invoice_number=INV-2024-001, date=2026-03-15, subtotal=1250.00, tax=106.25, shipping=15.00, total=1371.25",
+            "INV-2024-001;1250.00;106.25;15.00;1371.25",
           category: "invoice",
         },
         {
           id: "tc-3-2",
-          name: "Receipt with discounts",
-          input: "WALMART SUPERCENTER\n2x Organic Milk $4.99 ea = $9.98\n1x Bread $3.49\nMember Discount: -$2.00\nTOTAL: $11.47\nPaid: Visa ****1234",
+          name: "含折扣的收据",
+          input: "沃尔玛超市\n2x 有机牛奶 $4.99/件 = $9.98\n1x 面包 $3.49\n会员折扣: -$2.00\n总计: $11.47\n支付:  Visa ****1234",
           expectedOutput:
-            "Should extract: store=Walmart, items=[milk x2 $9.98, bread x1 $3.49], discount=2.00, total=11.47, payment=Visa ending 1234",
+            "超市;牛奶;面包;折扣;Visa;1234",
           category: "receipt",
         },
         {
           id: "tc-3-3",
-          name: "Email action items",
-          input: "Hey team, following up on yesterday's meeting. @Sarah please send the Q4 report by Friday. @Mike we need the API docs updated before the 20th. Let's sync again next Tuesday at 2pm.",
+          name: "邮件待办事项",
+          input: "大家好，跟进昨天会议内容。@Sarah 请在周五前发送 Q4 报告。@Mike 我们需要在 20 号前更新 API 文档。下周二下午 2 点再同步。",
           expectedOutput:
-            "Should extract action_items: [{assignee: Sarah, task: send Q4 report, deadline: Friday}, {assignee: Mike, task: update API docs, deadline: 20th}], next_meeting: next Tuesday 2pm",
+            "Sarah;Q4 报告;Mike;API 文档;下周二",
           category: "email",
         },
       ],
@@ -150,70 +150,70 @@ export function createSeedRuns(): TestRun[] {
     {
       id: "run-v2-3-0",
       suiteId: "suite-1",
-      suiteName: "Customer Support Agent",
+      suiteName: "客服 Agent",
       timestamp: new Date(now).toISOString(),
       results: [
         {
           testCaseId: "tc-1-1",
           actualOutput:
-            "I'm sorry to hear about the double charge on your order #12345. I can see both $49.99 charges in our system. I've initiated a refund for the duplicate charge. You should see it back on your original payment method within 3-5 business days. Could you confirm if you paid with Visa ending in 4532?",
+            "很抱歉听到您订单 #12345 被重复扣款了。我在系统中确实看到了两笔 $49.99 的扣款记录。我已为您发起了重复扣款的退款，您应在 3-5 个工作日内通过原支付方式收到退款。请问您是否确认使用的是尾号 4532 的 Visa 卡支付？",
           passed: true,
-          score: 0.92,
+          score: 0.8,
           latencyMs: 1240,
           tokenCost: 0.0034,
         },
         {
           testCaseId: "tc-1-2",
           actualOutput:
-            "Our standard return window is 30 days, and your purchase is at 35 days. However, since the product is still sealed, you may qualify for an exception. Let me connect you with a specialist who can review this manually. Could you share the order number?",
+            "我们的标准退货窗口是 30 天，而您的购买已过去 35 天。不过由于产品仍然未拆封，您可能有例外资格。让我为您联系专员进行人工审核。请提供一下订单号？",
           passed: true,
-          score: 0.88,
+          score: 0.8,
           latencyMs: 980,
           tokenCost: 0.0028,
         },
         {
           testCaseId: "tc-1-3",
           actualOutput:
-            "I apologize for the delay with your order #67890. I've checked and it appears your package is stuck at a sorting facility. I can either: 1) Contact the carrier for an urgent update, 2) Ship a replacement immediately at no cost, or 3) Issue a full refund. Which would you prefer?",
+            "很抱歉您的订单 #67890 发生了延迟。我查询后发现包裹似乎滞留在分拣中心。我可以为您：1) 联系承运商进行紧急查询，2) 立即免费补发，或 3) 办理全额退款。您更倾向哪种方案？",
           passed: true,
-          score: 0.95,
+          score: 1.0,
           latencyMs: 1580,
           tokenCost: 0.0041,
         },
         {
           testCaseId: "tc-1-4",
           actualOutput:
-            "I'm sorry about the cracked screen. Please upload photos of the damage through this link: [upload]. Once we receive them, we'll process a replacement immediately. Would you like the replacement shipped to the same address?",
+            "很抱歉听到屏幕碎了。请通过此链接上传损坏照片：[upload]。收到后我们将立即为您处理换货。是否需要寄送到同一地址？",
           passed: false,
-          score: 0.55,
+          score: 0.4,
           latencyMs: 890,
           tokenCost: 0.0025,
-          error: "Missing empathy statements. Did not explain damage claim process fully. Should mention warranty coverage.",
+          error: "得分 0.40 低于阈值",
         },
         {
           testCaseId: "tc-1-5",
           actualOutput:
-            "I can help cancel your Premium subscription. Your subscription will be cancelled effective immediately and you won't be charged again. Your access will continue until the end of your current billing period (May 31, 2026). May I ask why you're cancelling so we can improve?",
+            "我可以帮您取消 Premium 订阅。订阅将立即取消，您不会再被收费。在当前计费周期结束前（2026年5月31日），您仍可继续使用。方便告知取消原因吗？我们会发送取消确认邮件。",
           passed: true,
-          score: 0.91,
+          score: 0.8,
           latencyMs: 1120,
           tokenCost: 0.0031,
         },
         {
           testCaseId: "tc-1-6",
           actualOutput:
-            "Let me check your order. I see that 3 of 5 items were delivered. The remaining 2 items were shipped separately and are currently in transit. Here are the tracking numbers: TK-111 for item 4 (arriving tomorrow), TK-112 for item 5 (arriving Thursday).",
+            "让我查一下您的订单。我看到 5 件商品中的 3 件已送达。其余 2 件已分开发货，目前在运输中。物流单号：TK-111（第 4 件，明天到达），TK-112（第 5 件，周四到达）。",
           passed: true,
-          score: 0.87,
+          score: 1.0,
           latencyMs: 1340,
           tokenCost: 0.0036,
         },
       ],
       summary: {
         total: 6,
-        passed: 5,
-        failed: 1,
-        avgScore: 0.847,
+        passed: 4,
+        failed: 2,
+        avgScore: 0.717,
         totalLatencyMs: 7150,
         totalTokenCost: 0.0195,
       },
@@ -223,75 +223,75 @@ export function createSeedRuns(): TestRun[] {
     {
       id: "run-v2-2-0",
       suiteId: "suite-1",
-      suiteName: "Customer Support Agent",
+      suiteName: "客服 Agent",
       timestamp: new Date(now - 86400000).toISOString(),
       results: [
         {
           testCaseId: "tc-1-1",
           actualOutput:
-            "I see the double charge. I'll process a refund. Please allow 5-7 days.",
+            "我看到有重复扣款，我会处理退款，请等 5-7 天。",
           passed: false,
           score: 0.35,
           latencyMs: 620,
           tokenCost: 0.0012,
-          error: "Too brief, missing empathy, incorrect refund timeline, didn't ask for payment confirmation",
+          error: "过于简短，缺少同理心，退款时间线错误，未要求确认支付方式",
         },
         {
           testCaseId: "tc-1-2",
           actualOutput:
-            "Our return policy is 30 days. Unfortunately we can't accept returns after that period.",
+            "我们的退货政策是 30 天，抱歉超过政策期限无法退货。",
           passed: false,
           score: 0.25,
           latencyMs: 450,
           tokenCost: 0.0009,
-          error: "Dismissive, didn't mention exception process for sealed items, didn't offer escalation path",
+          error: "态度敷衍，未提及未拆封商品的例外流程，未提供升级途径",
         },
         {
           testCaseId: "tc-1-3",
           actualOutput:
-            "Your tracking shows the package is still in transit. Please wait a few more days.",
+            "您的物流显示包裹仍在运输中，请再等几天。",
           passed: false,
           score: 0.3,
           latencyMs: 580,
           tokenCost: 0.0011,
-          error: "Dismissive, didn't investigate, didn't offer resolution options, no apology",
+          error: "态度敷衍，未进行调查，未提供解决方案，没有道歉",
         },
         {
           testCaseId: "tc-1-4",
           actualOutput:
-            "Please send photos of the cracked screen and we'll look into it.",
+            "请发送屏幕损坏的照片，我们会跟进处理。",
           passed: false,
           score: 0.28,
           latencyMs: 380,
           tokenCost: 0.0008,
-          error: "Minimal empathy, no clear process explanation, didn't offer immediate options",
+          error: "同理心不足，没有明确说明流程，未提供即时选项",
         },
         {
           testCaseId: "tc-1-5",
           actualOutput:
-            "Your Premium subscription has been cancelled. Is there anything else?",
+            "您的 Premium 订阅已取消。还有其他事吗？",
           passed: false,
           score: 0.4,
           latencyMs: 520,
           tokenCost: 0.001,
-          error: "Too brief, didn't confirm effective date or billing period access, didn't ask for reason",
+          error: "过于简短，未确认生效日期或计费期权限，未询问原因",
         },
         {
           testCaseId: "tc-1-6",
           actualOutput:
-            "The remaining items should arrive soon. Check your tracking.",
+            "其余商品应该很快到达，请自行查看物流。",
           passed: false,
           score: 0.2,
           latencyMs: 440,
           tokenCost: 0.0009,
-          error: "Vague response, didn't verify order details, no specific tracking info, dismissive tone",
+          error: "回复模糊，未核实订单详情，无具体物流信息，语气敷衍",
         },
       ],
       summary: {
         total: 6,
         passed: 0,
         failed: 6,
-        avgScore: 0.297,
+        avgScore: 0.175,
         totalLatencyMs: 2990,
         totalTokenCost: 0.0059,
       },
@@ -301,13 +301,13 @@ export function createSeedRuns(): TestRun[] {
     {
       id: "run-code-v1-1",
       suiteId: "suite-2",
-      suiteName: "Code Review Agent",
+      suiteName: "代码审查 Agent",
       timestamp: new Date(now - 3600000).toISOString(),
       results: [
         {
           testCaseId: "tc-2-1",
           actualOutput:
-            "CRITICAL: SQL Injection vulnerability detected. The code concatenates user input directly into the SQL query. An attacker could inject malicious SQL via `req.params.id`. Fix: Use parameterized queries - `db.query('SELECT * FROM users WHERE id = ?', [req.params.id])`",
+            "严重：检测到 SQL 注入漏洞。代码将用户输入直接拼接到 SQL 查询中。攻击者可通过 `req.params.id` 注入恶意 SQL。修复：使用参数化查询 — `db.query('SELECT * FROM users WHERE id = ?', [req.params.id])`",
           passed: true,
           score: 0.96,
           latencyMs: 2100,
@@ -316,7 +316,7 @@ export function createSeedRuns(): TestRun[] {
         {
           testCaseId: "tc-2-2",
           actualOutput:
-            "Warning: Missing error handling and null check. If `User.findById(id)` returns null (user not found), accessing `user.name` will throw TypeError. Suggested fix: Add null check and try/catch block.",
+            "警告：缺少错误处理和空值检查。如果 `User.findById(id)` 返回 null（用户未找到），访问 `user.name` 将抛出 TypeError。建议修复：添加空值检查和 try/catch 块。",
           passed: true,
           score: 0.89,
           latencyMs: 1800,
@@ -325,7 +325,7 @@ export function createSeedRuns(): TestRun[] {
         {
           testCaseId: "tc-2-3",
           actualOutput:
-            "Performance issue: Sequential awaits in a loop (N+1 pattern). Each fetch waits for the previous one to complete. Use `Promise.all(ids.map(id => fetch(...)))` for parallel execution, or implement a batch endpoint.",
+            "性能问题：循环中顺序 await（N+1 模式）。每次 fetch 都需要等待前一次完成。使用 `Promise.all(ids.map(id => fetch(...)))` 实现并行执行，或实现批量端点。",
           passed: true,
           score: 0.93,
           latencyMs: 1650,
@@ -334,7 +334,7 @@ export function createSeedRuns(): TestRun[] {
         {
           testCaseId: "tc-2-4",
           actualOutput:
-            "CRITICAL SECURITY: Hardcoded AWS secret key detected. This is a severe security vulnerability. Never commit credentials to source code. Move to environment variables or use AWS Secrets Manager.",
+            "严重安全：检测到硬编码 AWS 密钥。这是严重的安全漏洞。切勿将凭据提交到源代码。移至环境变量或使用 AWS Secrets Manager。",
           passed: true,
           score: 0.98,
           latencyMs: 1200,
@@ -343,7 +343,7 @@ export function createSeedRuns(): TestRun[] {
         {
           testCaseId: "tc-2-5",
           actualOutput:
-            "Note: The change from `x == null` to `x === null || x === undefined` is technically equivalent in JavaScript. `x == null` is the only case where `==` checks for both null and undefined. The change is safe but redundant. Good that tests were added.",
+            "说明：将 `x == null` 改为 `x === null || x === undefined` 在 JavaScript 中技术上是等价的。`x == null` 是 `==` 唯一同时检查 null 和 undefined 的情况。此修改安全但冗余。添加了测试是好的。",
           passed: true,
           score: 0.94,
           latencyMs: 1900,
@@ -354,7 +354,7 @@ export function createSeedRuns(): TestRun[] {
         total: 5,
         passed: 5,
         failed: 0,
-        avgScore: 0.94,
+        avgScore: 0.843,
         totalLatencyMs: 8650,
         totalTokenCost: 0.0223,
       },
@@ -364,7 +364,7 @@ export function createSeedRuns(): TestRun[] {
     {
       id: "run-extract-v1-0",
       suiteId: "suite-3",
-      suiteName: "Data Extraction Agent",
+      suiteName: "数据提取 Agent",
       timestamp: new Date(now - 7200000).toISOString(),
       results: [
         {
@@ -377,17 +377,17 @@ export function createSeedRuns(): TestRun[] {
         },
         {
           testCaseId: "tc-3-2",
-          actualOutput: `{"store":"Walmart","items":[{"name":"Organic Milk","quantity":2,"price":9.98},{"name":"Bread","quantity":1,"price":3.49}],"discount":2.00,"total":11.47,"payment":{"type":"Visa","last4":"1234"}}`,
+          actualOutput: `{"店铺":"沃尔玛超市","商品":[{"名称":"有机牛奶","数量":2,"价格":9.98},{"名称":"面包","数量":1,"价格":3.49}],"折扣":2.00,"总计":11.47,"支付":{"类型":"Visa","尾号":"1234"}}`,
           passed: true,
-          score: 0.92,
+          score: 1.0,
           latencyMs: 1380,
           tokenCost: 0.0036,
         },
         {
           testCaseId: "tc-3-3",
-          actualOutput: `{"action_items":[{"assignee":"Sarah","task":"send Q4 report","deadline":"Friday"},{"assignee":"Mike","task":"update API docs","deadline":"20th"}],"next_meeting":"next Tuesday 2pm"}`,
+          actualOutput: `{"待办事项":[{"负责人":"Sarah","任务":"发送 Q4 报告","截止":"周五"},{"负责人":"Mike","任务":"更新 API 文档","截止":"20号"}],"下次会议":"下周二下午2点"}`,
           passed: true,
-          score: 0.94,
+          score: 1.0,
           latencyMs: 1220,
           tokenCost: 0.0033,
         },
@@ -396,7 +396,7 @@ export function createSeedRuns(): TestRun[] {
         total: 3,
         passed: 3,
         failed: 0,
-        avgScore: 0.943,
+        avgScore: 1.0,
         totalLatencyMs: 4050,
         totalTokenCost: 0.0108,
       },

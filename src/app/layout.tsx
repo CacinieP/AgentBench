@@ -5,9 +5,9 @@ import { SettingsProvider } from "@/lib/settings-context";
 import { DataProvider } from "@/lib/data-context";
 
 export const metadata: Metadata = {
-  title: "AgentBench - AI Agent EvalOps Platform",
+  title: "AgentBench — AI Agent 评测运维平台",
   description:
-    "Regression testing, drift detection, and quality assurance for AI agents. Built with AI coding, for AI coding.",
+    "AI Agent 回归测试、漂移检测与质量保障。以 AI 编码为工具，为 AI 编码而构建。",
 };
 
 export default function RootLayout({
@@ -16,7 +16,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full antialiased">
+    <html lang="zh-CN" className="h-full antialiased">
       <body className="min-h-full flex">
         <SettingsProvider>
           <DataProvider>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import {
   TestTube2,
   Plus,
@@ -10,6 +10,7 @@ import {
   Clock,
   DollarSign,
   Shield,
+  Trash2,
 } from "lucide-react";
 import StatusBadge from "@/components/StatusBadge";
 import RunSimulation from "@/components/RunSimulation";
@@ -17,12 +18,14 @@ import ScoreRing from "@/components/ScoreRing";
 import CreateSuiteModal from "@/components/CreateSuiteModal";
 import { useData } from "@/lib/data-context";
 import { TestResult, TestRun } from "@/lib/types";
+import { scoreColor } from "@/lib/utils";
 
 export default function SuitesPage() {
-  const { suites, runs, addRun } = useData();
+  const { suites, runs, addRun, deleteSuite } = useData();
   const [expandedSuite, setExpandedSuite] = useState<string | null>(null);
   const [simulatingSuite, setSimulatingSuite] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   const sortedRuns = useMemo(
     () =>
@@ -43,9 +46,32 @@ export default function SuitesPage() {
     setSimulatingSuite(suiteId);
   };
 
+  const handleDeleteSuite = (suiteId: string) => {
+    setDeleteConfirmId(suiteId);
+  };
+
+  const confirmDelete = () => {
+    if (deleteConfirmId) {
+      deleteSuite(deleteConfirmId);
+      if (expandedSuite === deleteConfirmId) setExpandedSuite(null);
+      setDeleteConfirmId(null);
+    }
+  };
+
+  const suitesRef = useRef(suites);
+  const addRunRef = useRef(addRun);
+
+  useEffect(() => {
+    suitesRef.current = suites;
+  }, [suites]);
+
+  useEffect(() => {
+    addRunRef.current = addRun;
+  }, [addRun]);
+
   const handleSimComplete = useCallback(
     (suiteId: string) => (results: TestResult[]) => {
-      const suite = suites.find((s) => s.id === suiteId);
+      const suite = suitesRef.current.find((s) => s.id === suiteId);
       if (!suite) {
         setSimulatingSuite(null);
         return;
@@ -84,10 +110,10 @@ export default function SuitesPage() {
           : "simulation",
       };
 
-      addRun(run);
+      addRunRef.current(run);
       setSimulatingSuite(null);
     },
-    [suites, addRun]
+    []
   );
 
   const handleSimCancel = useCallback(() => {
@@ -99,10 +125,9 @@ export default function SuitesPage() {
       <div className="p-8 max-w-[1200px] mx-auto">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-2xl font-bold mb-1">Test Suites</h1>
+            <h1 className="text-2xl font-bold mb-1">测试套件</h1>
             <p className="text-sm text-[var(--text-secondary)]">
-              Define test cases and manage evaluation scenarios for your AI
-              agents
+              定义测试用例，管理 AI Agent 的评测场景
             </p>
           </div>
           <button
@@ -110,19 +135,19 @@ export default function SuitesPage() {
             className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--accent)] text-white text-sm font-medium hover:opacity-90 transition-opacity"
           >
             <Plus size={14} />
-            New Suite
+            新建套件
           </button>
         </div>
         <div className="text-center py-20">
           <p className="text-[var(--text-muted)] mb-4">
-            No test suites yet. Create one to get started.
+            暂无测试套件，创建一个开始吧。
           </p>
           <button
             onClick={() => setShowCreateModal(true)}
             className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--accent)] text-white text-sm font-medium hover:opacity-90 transition-opacity"
           >
             <Plus size={14} />
-            Create First Suite
+            创建首个套件
           </button>
         </div>
         <CreateSuiteModal
@@ -137,9 +162,9 @@ export default function SuitesPage() {
     <div className="p-8 max-w-[1200px] mx-auto">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold mb-1">Test Suites</h1>
+          <h1 className="text-2xl font-bold mb-1">测试套件</h1>
           <p className="text-sm text-[var(--text-secondary)]">
-            Define test cases and manage evaluation scenarios for your AI agents
+            定义测试用例，管理 AI Agent 的评测场景
           </p>
         </div>
         <button
@@ -147,7 +172,7 @@ export default function SuitesPage() {
           className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--accent)] text-white text-sm font-medium hover:opacity-90 transition-opacity"
         >
           <Plus size={14} />
-          New Suite
+          新建套件
         </button>
       </div>
 
@@ -186,7 +211,7 @@ export default function SuitesPage() {
                   <div className="text-left">
                     <h3 className="text-sm font-semibold">{suite.name}</h3>
                     <p className="text-xs text-[var(--text-muted)]">
-                      {suite.cases.length} cases &middot; {suite.agentType}
+                      {suite.cases.length} 个用例 &middot; {suite.agentType}
                     </p>
                   </div>
                 </div>
@@ -220,9 +245,22 @@ export default function SuitesPage() {
                         handleRunTest(suite.id);
                       }}
                       className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors bg-[var(--accent-bg)] text-[var(--accent-light)] hover:opacity-80"
+                      aria-label={`Run tests for ${suite.name}`}
                     >
                       <Play size={12} />
-                      Run Tests
+                      运行测试
+                    </button>
+                  )}
+                  {!isSimulating && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteSuite(suite.id);
+                      }}
+                      className="flex items-center gap-1 px-2 py-1.5 rounded-md text-xs transition-colors text-[var(--text-muted)] hover:text-[var(--red)] hover:bg-[var(--red-bg)]"
+                      aria-label={`Delete ${suite.name}`}
+                    >
+                      <Trash2 size={12} />
                     </button>
                   )}
                 </div>
@@ -276,12 +314,7 @@ export default function SuitesPage() {
                                     className="progress-bar-fill"
                                     style={{
                                       width: `${result.score * 100}%`,
-                                      backgroundColor:
-                                        result.score > 0.7
-                                          ? "var(--green)"
-                                          : result.score > 0.4
-                                            ? "var(--yellow)"
-                                            : "var(--red)",
+                                      backgroundColor: scoreColor(result.score),
                                     }}
                                   />
                                 </div>
@@ -324,6 +357,38 @@ export default function SuitesPage() {
         open={showCreateModal}
         onClose={() => setShowCreateModal(false)}
       />
+
+      {/* Delete Confirmation Dialog */}
+      {deleteConfirmId && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+          onClick={() => setDeleteConfirmId(null)}
+        >
+          <div
+            className="glass-card w-full max-w-[360px] mx-4 p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-base font-semibold mb-2">删除套件</h3>
+            <p className="text-sm text-[var(--text-secondary)] mb-4">
+              这将永久删除该套件及其所有运行历史。此操作不可撤销。
+            </p>
+            <div className="flex items-center justify-end gap-2">
+              <button
+                onClick={() => setDeleteConfirmId(null)}
+                className="px-4 py-2 rounded-lg text-sm text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
+              >
+                取消
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="px-4 py-2 rounded-lg text-sm font-medium bg-[var(--red)] text-white hover:opacity-90 transition-opacity"
+              >
+                删除
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

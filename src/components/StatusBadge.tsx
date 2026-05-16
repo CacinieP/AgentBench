@@ -13,22 +13,22 @@ export default function StatusBadge({ status, label, size = "sm" }: StatusBadgeP
     pass: {
       bg: "var(--green-bg)",
       color: "var(--green)",
-      text: label || "PASS",
+      text: label || "通过",
     },
     fail: {
       bg: "var(--red-bg)",
       color: "var(--red)",
-      text: label || "FAIL",
+      text: label || "失败",
     },
     warning: {
       bg: "var(--yellow-bg)",
       color: "var(--yellow)",
-      text: label || "WARN",
+      text: label || "警告",
     },
     running: {
       bg: "var(--blue-bg)",
       color: "var(--blue)",
-      text: label || "RUNNING",
+      text: label || "运行中",
     },
   };
 

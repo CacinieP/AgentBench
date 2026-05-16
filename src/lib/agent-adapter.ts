@@ -14,7 +14,7 @@ export async function callAgent(
   timeoutMs: number
 ): Promise<AgentCallResult> {
   if (!endpoint.url) {
-    throw new Error("Agent endpoint URL is not configured. Go to Settings and set an endpoint URL.");
+    throw new Error("Agent 端点 URL 未配置。请前往设置页面配置端点 URL。");
   }
 
   const start = performance.now();
@@ -38,7 +38,7 @@ export async function callAgent(
         output = await callCustomHTTP(endpoint, input, controller.signal);
         break;
       default:
-        throw new Error(`Unknown endpoint type: ${endpoint.type}`);
+        throw new Error(`未知的端点类型: ${endpoint.type}`);
     }
 
     const latencyMs = Math.round(performance.now() - start);
@@ -72,13 +72,13 @@ async function callOpenAIChat(
 
   if (!res.ok) {
     const err = await res.text();
-    throw new Error(`Agent API error (${res.status}): ${err}`);
+    throw new Error(`Agent API 错误 (${res.status}): ${err}`);
   }
 
   const data = await res.json();
 
   const output = extractByPath(data, endpoint.responsePath || "choices.0.message.content");
-  if (!output) throw new Error("Empty response from agent endpoint");
+  if (!output) throw new Error("Agent 端点返回空响应");
 
   return {
     output,
@@ -110,13 +110,13 @@ async function callAnthropicMessages(
 
   if (!res.ok) {
     const err = await res.text();
-    throw new Error(`Agent API error (${res.status}): ${err}`);
+    throw new Error(`Agent API 错误 (${res.status}): ${err}`);
   }
 
   const data = await res.json();
 
   const output = extractByPath(data, endpoint.responsePath || "content.0.text");
-  if (!output) throw new Error("Empty response from agent endpoint");
+  if (!output) throw new Error("Agent 端点返回空响应");
 
   return {
     output,
@@ -149,14 +149,14 @@ async function callCustomHTTP(
 
   if (!res.ok) {
     const err = await res.text();
-    throw new Error(`Agent API error (${res.status}): ${err}`);
+    throw new Error(`Agent API 错误 (${res.status}): ${err}`);
   }
 
   const data = await res.json();
 
   if (endpoint.responsePath) {
     const output = extractByPath(data, endpoint.responsePath);
-    if (!output) throw new Error(`Path "${endpoint.responsePath}" not found in response`);
+    if (!output) throw new Error(`路径 "${endpoint.responsePath}" 在响应中未找到`);
     return String(output);
   }
 
@@ -173,7 +173,7 @@ async function callCustomHTTP(
   );
 }
 
-function extractByPath(obj: unknown, path: string): string | null {
+export function extractByPath(obj: unknown, path: string): string | null {
   const parts = path.split(".");
   let current: unknown = obj;
   for (const part of parts) {
@@ -183,7 +183,7 @@ function extractByPath(obj: unknown, path: string): string | null {
   return current != null ? String(current) : null;
 }
 
-function estimateCost(
+export function estimateCost(
   type: AgentEndpoint["type"],
   inputTokens: number,
   outputTokens: number

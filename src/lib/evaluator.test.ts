@@ -108,7 +108,59 @@ describe("contains", () => {
 
   it("handles empty expected output", () => {
     const result = evaluate("something", "", config);
-    expect(result.rationale).toContain("No expected output");
+    expect(result.rationale).toContain("配置错误");
+    expect(result.passed).toBe(false);
+  });
+
+  it("does not match short phrase as substring of larger word", () => {
+    // "a" should NOT match "catastrophe" — requires word boundary for <= 3 chars
+    const result = evaluate(
+      "catastrophe",
+      "a",
+      config
+    );
+    expect(result.score).toBe(0);
+    expect(result.rationale).toContain("0/1");
+  });
+
+  it("matches short phrase at word boundary", () => {
+    const result = evaluate(
+      "I need a solution for this",
+      "a",
+      config
+    );
+    expect(result.score).toBe(1.0);
+  });
+
+  it("detects negation — NOT matching", () => {
+    const result = evaluate(
+      "The system will delete the record",
+      "NOT delete",
+      config
+    );
+    // Actual says "delete", but expected says "NOT delete" → mismatch
+    expect(result.score).toBe(0);
+    expect(result.rationale).toContain("误匹配否定词");
+  });
+
+  it("passes negation check when word absent", () => {
+    const result = evaluate(
+      "The system will archive the record",
+      "NOT delete",
+      config
+    );
+    // Actual does NOT say "delete", expected says "NOT delete" → match
+    expect(result.score).toBe(1.0);
+  });
+
+  it("handles Chinese negation", () => {
+    const result = evaluate(
+      "系统会删除此记录",
+      "禁止删除",
+      config
+    );
+    expect(result.score).toBe(0);
+    expect(result.rationale).toContain("误匹配否定词");
   });
 });
 
@@ -141,7 +193,7 @@ describe("regex", () => {
     const badConfig: EvaluatorConfig = { type: "regex", pattern: "[invalid" };
     const result = evaluate("anything", "", badConfig);
     expect(result.score).toBe(0);
-    expect(result.rationale).toContain("Invalid regex");
+    expect(result.rationale).toContain("配置错误");
   });
 });
 
@@ -233,19 +285,21 @@ describe("json_schema", () => {
     const result = evaluate("not json at all", "", config);
     expect(result.score).toBe(0);
     expect(result.passed).toBe(false);
-    expect(result.rationale).toContain("Invalid JSON");
+    expect(result.rationale).toContain("无效 JSON");
   });
 
-  it("accepts valid JSON with no schema", () => {
+  it("warns when no schema provided", () => {
     const config: EvaluatorConfig = { type: "json_schema" };
     const result = evaluate('{"anything": "goes"}', "", config);
-    expect(result.score).toBe(1.0);
+    expect(result.rationale).toContain("配置警告");
+    expect(result.score).toBe(0.5);
+    expect(result.passed).toBe(false);
   });
 
-  it("accepts valid JSON array with no schema", () => {
+  it("warns when no schema provided for array", () => {
     const config: EvaluatorConfig = { type: "json_schema" };
     const result = evaluate("[1, 2, 3]", "", config);
-    expect(result.score).toBe(1.0);
+    expect(result.rationale).toContain("配置警告");
   });
 });
 
@@ -302,6 +356,75 @@ describe("llm_judge", () => {
 
     const result = await evaluateWithLLM("a", "a", config, mockProvider);
     expect(result.score).toBe(0.7);
+  });
+});
+
+describe("code_test", () => {
+  const config: EvaluatorConfig = { type: "code_test", threshold: 0.4 };
+
+  it("detects code blocks with language tags", () => {
+    const actual = "Here is the fix:\n```typescript\nfunction add(a: number, b: number): number {\n  return a + b;\n}\n```";
+    const result = evaluate(actual, "should have a function", config);
+    expect(result.score).toBeGreaterThan(0.5);
+    expect(result.evaluatorType).toBe("code_test");
+    expect(result.rationale).toContain("代码测试");
+  });
+
+  it("scores low for plain text with no code", () => {
+    const result = evaluate("This is just a plain text response with no code at all.", "anything", config);
+    expect(result.score).toBeLessThan(0.3);
+    expect(result.rationale).toContain("未检测到有效代码");
+  });
+
+  it("detects Python code with def and class", () => {
+    const actual = "```python\ndef hello():\n    print('hello')\n\nclass Foo:\n    pass\n```";
+    const result = evaluate(actual, "Python function and class", config);
+    expect(result.score).toBeGreaterThan(0.5);
+  });
+
+  it("requires keywords from expected output", () => {
+    const actual = "```ts\nconst x = 1;\n```";
+    const result = evaluate(actual, "authentication middleware with encryption and validation", config);
+    // Low requirement coverage — none of the expected keywords appear in the code
+    expect(result.score).toBeLessThan(0.7);
+    expect(result.rationale).toContain("代码测试");
+  });
+
+  it("scores high for well-structured code matching requirements", () => {
+    const actual = `\`\`\`typescript
+import { useState } from "react";
+
+export function useCounter(initial: number = 0) {
+  const [count, setCount] = useState(initial);
+  const increment = () => setCount(c => c + 1);
+  const decrement = () => setCount(c => c - 1);
+  return { count, increment, decrement };
+}
+\`\`\``;
+    const result = evaluate(actual, "export function hook useState", config);
+    expect(result.score).toBeGreaterThan(0.6);
+    expect(result.passed).toBe(true);
+  });
+
+  it("handles empty expected output", () => {
+    const actual = "```js\nconst x = 1;\n```";
+    const result = evaluate(actual, "", config);
+    // Has code, no requirements — gets decent score from code presence
+    expect(result.score).toBeGreaterThan(0.3);
+  });
+
+  it("detects inline code snippets", () => {
+    const actual = "Use `const x = 1` and then call `console.log(x)`. Also note `let y = 2`.";
+    const result = evaluate(actual, "const let console", config);
+    // Inline code without blocks gets moderate score
+    expect(result.score).toBeGreaterThan(0.3);
+  });
+
+  it("respects custom threshold", () => {
+    const strictConfig: EvaluatorConfig = { type: "code_test", threshold: 0.8 };
+    const actual = "```js\nconst x = 1;\n```";
+    const result = evaluate(actual, "complex algorithm with inheritance", strictConfig);
+    expect(result.passed).toBe(false);
   });
 });
 

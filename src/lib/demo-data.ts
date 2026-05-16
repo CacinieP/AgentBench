@@ -1,14 +1,14 @@
 export const demoAIAnalysis = {
   summary:
-    "The v2.3.0 release shows significant improvement across all test cases, with pass rate jumping from 0% to 83%. The primary improvement comes from enhanced empathy expressions, more detailed resolution options, and proper escalation paths. One remaining failure case (product defect report) needs attention in the next iteration.",
+    "v2.3.0 版本在所有测试用例上均有显著提升，通过率从 0% 跃升至 83%。主要改进来自增强的同理心表达、更详细的解决方案选项和正确的升级路径。仍有一个未通过的失败用例（产品缺陷报告）需要在下一次迭代中重点关注。",
   regressionPatterns: [
-    "v2.2.0 responses were uniformly brief and dismissive, suggesting insufficient system prompt guidance for empathy",
-    "All v2.2.0 failures share a pattern of missing process explanation and resolution options",
+    "v2.2.0 的回复普遍过于简短和敷衍，提示系统提示词对同理心的引导不足",
+    "所有 v2.2.0 的失败用例都缺少流程说明和解决方案选项这一共同模式",
   ],
   suggestedFixes: [
-    "For tc-1-4 (product defect): Add warranty coverage explanation and claim process details to the system prompt",
-    "Consider adding a 'resolution completeness' checklist to ensure all required elements are present",
-    "The model upgrade from Haiku to Sonnet appears to be the primary quality driver - verify this in further tests",
+    "针对 tc-1-4（产品缺陷）：在系统提示词中添加保修范围说明和索赔流程细节",
+    "考虑添加「回复完整性」检查清单，确保所有必需元素均已包含",
+    "从 Haiku 到 Sonnet 的模型升级似乎是质量提升的主要驱动因素——在进一步测试中加以验证",
   ],
   riskAssessment: "low" as const,
 };

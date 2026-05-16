@@ -123,7 +123,7 @@ export default function SettingsPage() {
           });
         }
       } catch {
-        alert("Failed to parse file. Please provide valid JSON or JSONL.");
+        alert("无法解析文件。请提供有效的 JSON 或 JSONL。");
       }
     };
     reader.readAsText(file);
@@ -180,9 +180,9 @@ export default function SettingsPage() {
   return (
     <div className="p-8 max-w-[700px] mx-auto">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold mb-1">Settings</h1>
+        <h1 className="text-2xl font-bold mb-1">设置</h1>
         <p className="text-sm text-[var(--text-secondary)]">
-          Configure your AI provider for analysis features
+          配置 AI 提供商以启用分析功能
         </p>
       </div>
 
@@ -205,18 +205,18 @@ export default function SettingsPage() {
           </div>
           <div>
             <p className="text-sm font-medium">
-              {isConfigured ? "AI Provider Configured" : "No API Key Set"}
+              {isConfigured ? "AI 提供商已配置" : "未设置 API Key"}
             </p>
             <p className="text-xs text-[var(--text-muted)]">
               {isConfigured
                 ? `${currentProvider?.label} · ${settings.model}`
-                : "Using demo analysis fallback"}
+                : "使用演示分析作为后备"}
             </p>
           </div>
         </div>
         {isConfigured && (
           <span className="text-[10px] px-2 py-0.5 rounded-full bg-[var(--green-bg)] text-[var(--green)] font-medium">
-            LIVE
+            真实
           </span>
         )}
       </div>
@@ -224,7 +224,7 @@ export default function SettingsPage() {
       {/* Provider selector */}
       <div className="glass-card p-5 mb-4">
         <label className="text-xs text-[var(--text-muted)] uppercase tracking-wider mb-3 block">
-          AI Provider
+          AI 提供商
         </label>
         <div className="grid grid-cols-3 gap-3">
           {PROVIDERS.map((p) => (
@@ -269,7 +269,7 @@ export default function SettingsPage() {
                 ? "sk-ant-api03-..."
                 : settings.provider === "openai"
                   ? "sk-..."
-                  : "Enter your API key"
+                  : "输入 API Key"
             }
             className="w-full bg-[var(--bg-secondary)] border border-[var(--border)] rounded-lg px-3 py-2 pr-10 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--accent)] transition-colors"
           />
@@ -281,7 +281,7 @@ export default function SettingsPage() {
           </button>
         </div>
         <p className="text-[10px] text-[var(--text-muted)] mt-1.5">
-          Key is stored in localStorage. When you trigger tests or AI analysis, the key is sent to this app's server route which forwards it to the configured provider. For full local control, self-host the app.
+          Key 存储在 localStorage 中。当你触发测试或 AI 分析时，Key 会发送到本应用的服务器路由，由其转发到配置的提供商。如需完全本地控制，可自行部署该应用。
         </p>
       </div>
 
@@ -289,7 +289,7 @@ export default function SettingsPage() {
       <div className="glass-card p-5 mb-4">
         <label className="text-xs text-[var(--text-muted)] uppercase tracking-wider mb-2 flex items-center gap-1.5">
           <Cpu size={10} />
-          Model
+          模型
         </label>
         {currentProvider && currentProvider.models.length > 0 ? (
           <div className="space-y-1.5">
@@ -333,7 +333,7 @@ export default function SettingsPage() {
             className="w-full bg-[var(--bg-secondary)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--accent)] transition-colors"
           />
           <div className="mt-2 space-y-1">
-            <p className="text-[10px] text-[var(--text-muted)]">Quick presets:</p>
+            <p className="text-[10px] text-[var(--text-muted)]">快速预设：</p>
             <div className="flex flex-wrap gap-1.5">
               {[
                 { label: "DeepSeek", url: "https://api.deepseek.com" },
@@ -362,10 +362,10 @@ export default function SettingsPage() {
           <div>
             <label className="text-sm font-medium flex items-center gap-1.5">
               <Zap size={12} className="text-yellow-400" />
-              Test Connection
+              测试连接
             </label>
             <p className="text-[10px] text-[var(--text-muted)] mt-0.5">
-              Send a small test request to verify your configuration
+              发送小请求以验证配置是否正确
             </p>
           </div>
           <button
@@ -390,20 +390,20 @@ export default function SettingsPage() {
             {testStatus === "testing" ? (
               <>
                 <Loader2 size={12} className="animate-spin" />
-                Testing...
+                测试中...
               </>
             ) : testStatus === "success" ? (
               <>
                 <CheckCircle2 size={12} />
-                Connected!
+                已连接！
               </>
             ) : testStatus === "error" ? (
               <>
                 <XCircle size={12} />
-                Failed
+                失败
               </>
             ) : (
-              "Test"
+              "测试"
             )}
           </button>
         </div>
@@ -414,7 +414,7 @@ export default function SettingsPage() {
         )}
         {testStatus === "success" && (
           <p className="text-xs text-[var(--green)] mt-2 bg-[var(--green-bg)] p-2 rounded-lg">
-            Successfully connected to {currentProvider?.label} ({settings.model})
+            成功连接到 {currentProvider?.label} ({settings.model})
           </p>
         )}
       </div>
@@ -423,19 +423,19 @@ export default function SettingsPage() {
       <div className="glass-card p-5 mb-4">
         <div className="flex items-center gap-2 mb-3">
           <Cpu size={14} className="text-[var(--accent-light)]" />
-          <span className="text-sm font-semibold">Agent Endpoint</span>
+          <span className="text-sm font-semibold">Agent 端点</span>
           {settings.agentEndpoint?.url ? (
             <span className="text-[10px] px-2 py-0.5 rounded-full bg-[var(--green-bg)] text-[var(--green)]">
-              CONFIGURED
+              已配置
             </span>
           ) : (
             <span className="text-[10px] px-2 py-0.5 rounded-full bg-[var(--yellow-bg)] text-[var(--yellow)]">
-              SIMULATION MODE
+              模拟模式
             </span>
           )}
         </div>
         <p className="text-xs text-[var(--text-muted)] mb-3">
-          Configure the AI agent endpoint to test against. Without this, runs use simulated results.
+          配置要测试的 AI Agent 端点。未设置时将使用模拟结果运行。
         </p>
 
         {/* Endpoint type selector */}
@@ -443,7 +443,7 @@ export default function SettingsPage() {
           {([
             { value: "openai_chat", label: "OpenAI Chat", desc: "/v1/chat/completions" },
             { value: "anthropic_messages", label: "Anthropic", desc: "/v1/messages" },
-            { value: "custom_http", label: "Custom HTTP", desc: "Any POST endpoint" },
+            { value: "custom_http", label: "自定义 HTTP", desc: "任意 POST 端点" },
           ] as const).map((t) => (
             <button
               key={t.value}
@@ -509,7 +509,7 @@ export default function SettingsPage() {
         {/* Agent API Key */}
         <div className="mb-3">
           <label className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider mb-1 block">
-            Agent API Key (optional)
+            Agent API Key（可选）
           </label>
           <input
             type="password"
@@ -524,18 +524,18 @@ export default function SettingsPage() {
                 },
               })
             }
-            placeholder="Leave empty if endpoint doesn't require auth"
+            placeholder="如果端点不需要认证，请留空"
             className="w-full bg-[var(--bg-secondary)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--accent)] transition-colors"
           />
           <p className="text-[10px] text-[var(--text-muted)] mt-1.5">
-            Stored in localStorage. Sent to this app's server route only when you run tests, then forwarded to your agent endpoint.
+            存储在 localStorage 中。仅在你运行测试时发送到本应用的服务端路由，然后转发到你的 Agent 端点。
           </p>
         </div>
 
         {/* Model */}
         <div className="mb-3">
           <label className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider mb-1 block">
-            Model (optional)
+            模型（可选）
           </label>
           <input
             type="text"
@@ -560,18 +560,19 @@ export default function SettingsPage() {
       <div className="glass-card p-5 mb-4">
         <div className="flex items-center gap-2 mb-3">
           <Shield size={14} className="text-[var(--accent-light)]" />
-          <span className="text-sm font-semibold">Default Evaluator</span>
+          <span className="text-sm font-semibold">默认评测器</span>
         </div>
         <p className="text-xs text-[var(--text-muted)] mb-3">
-          How agent responses are scored against expected output. Can be overridden per test case.
+          评估 Agent 响应与预期输出匹配度的方式。可针对单个测试用例覆盖设置。
         </p>
-        <div className="grid grid-cols-5 gap-2 mb-3">
+        <div className="grid grid-cols-3 md:grid-cols-6 gap-2 mb-3">
           {([
-            { value: "contains", label: "Contains", desc: "Key phrases" },
-            { value: "exact_match", label: "Exact", desc: "Full match" },
-            { value: "regex", label: "Regex", desc: "Pattern" },
-            { value: "json_schema", label: "JSON Schema", desc: "Structure" },
-            { value: "llm_judge", label: "LLM Judge", desc: "AI scoring" },
+            { value: "contains", label: "包含", desc: "关键短语" },
+            { value: "exact_match", label: "精确", desc: "完全匹配" },
+            { value: "regex", label: "正则", desc: "模式" },
+            { value: "json_schema", label: "JSON Schema", desc: "结构" },
+            { value: "llm_judge", label: "LLM 评判", desc: "AI 评分" },
+            { value: "code_test", label: "代码测试", desc: "代码质量" },
           ] as const).map((e) => (
             <button
               key={e.value}
@@ -624,17 +625,17 @@ export default function SettingsPage() {
             className="w-full accent-[var(--accent)]"
           />
           <div className="flex justify-between text-[10px] text-[var(--text-muted)]">
-            <span>Lenient (0.1)</span>
-            <span>Strict (1.0)</span>
+            <span>宽松 (0.1)</span>
+            <span>严格 (1.0)</span>
           </div>
         </div>
       </div>
 
       {/* Data Management */}
       <div className="glass-card p-5 mb-4">
-        <label className="text-sm font-medium mb-1 block">Data Management</label>
+        <label className="text-sm font-medium mb-1 block">数据管理</label>
         <p className="text-[10px] text-[var(--text-muted)] mb-3">
-          {suites.length} suite{suites.length !== 1 ? "s" : ""}, {runs.length} run{runs.length !== 1 ? "s" : ""} stored locally
+          {suites.length} 个套件，{runs.length} 次运行本地存储
         </p>
         <div className="flex items-center gap-3 flex-wrap">
           <button
@@ -642,14 +643,14 @@ export default function SettingsPage() {
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:opacity-80 transition-colors border border-[var(--border)]"
           >
             <Download size={12} />
-            Export JSON
+            导出 JSON
           </button>
           <button
             onClick={handleImport}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:opacity-80 transition-colors border border-[var(--border)]"
           >
             <Upload size={12} />
-            Import JSON / JSONL
+            导入 JSON / JSONL
           </button>
           <input
             ref={fileInputRef}
@@ -663,18 +664,18 @@ export default function SettingsPage() {
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-[var(--accent-bg)] text-[var(--accent-light)] hover:opacity-80 transition-colors"
           >
             <RotateCcw size={12} />
-            Reset to Sample Data
+            重置为示例数据
           </button>
           <button
             onClick={() => {
-              if (window.confirm("Delete all suites and runs? This cannot be undone.")) {
+              if (window.confirm("删除所有套件和运行记录？此操作不可撤销。")) {
                 clearAllData();
               }
             }}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-[var(--red-bg)] text-[var(--red)] hover:opacity-80 transition-colors"
           >
             <Trash2 size={12} />
-            Clear All Data
+            清除所有数据
           </button>
         </div>
       </div>

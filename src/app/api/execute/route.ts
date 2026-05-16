@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { callAgent } from "@/lib/agent-adapter";
-import { evaluate, evaluateWithLLM, isAsyncEvaluator, buildTestResult } from "@/lib/evaluator";
+import { evaluate, evaluateWithLLM, buildTestResult } from "@/lib/evaluator";
 import { callAI } from "@/lib/ai-provider";
 import { TestCase, AgentEndpoint, EvaluatorConfig, EvaluatorType } from "@/lib/types";
 import { AIProviderConfig } from "@/lib/ai-provider";
@@ -20,14 +20,14 @@ export async function POST(request: NextRequest) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    return NextResponse.json({ error: "请求体 JSON 不合法" }, { status: 400 });
   }
 
   const { testCase, endpoint, defaultEvaluator, timeoutMs, judgeProvider } = body;
 
   if (!testCase || !endpoint) {
     return NextResponse.json(
-      { error: "Missing testCase or endpoint" },
+      { error: "缺少 testCase 或 endpoint" },
       { status: 400 }
     );
   }
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
       const fallback = evaluate(agentResult.output, testCase.expectedOutput, { ...evaluatorConfig, type: "contains" });
       evalOutput = {
         ...fallback,
-        rationale: `[No AI provider for LLM Judge — used contains instead] ${fallback.rationale}`,
+        rationale: `[未配置 AI 提供商用于 LLM 评判 — 已改用包含匹配] ${fallback.rationale}`,
         evaluatorType: "llm_judge" as EvaluatorType,
       };
     } else {
@@ -82,13 +82,13 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ result });
   } catch (e) {
-    const msg = e instanceof Error ? e.message : "Unknown error";
+    const msg = e instanceof Error ? e.message : "未知错误";
     const evalType: EvaluatorType = evaluatorConfig.type;
 
     const result = buildTestResult(
       testCase.id,
       "",
-      { score: 0, passed: false, rationale: "Agent call failed", evaluatorType: evalType },
+      { score: 0, passed: false, rationale: "Agent 调用失败", evaluatorType: evalType },
       0,
       0,
       msg

@@ -14,12 +14,13 @@ import {
 } from "lucide-react";
 import clsx from "clsx";
 import { useData } from "@/lib/data-context";
+import { scoreColor } from "@/lib/utils";
 
 const navItems = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/suites", label: "Test Suites", icon: TestTube2 },
-  { href: "/compare", label: "Compare Runs", icon: GitCompareArrows },
-  { href: "/settings", label: "Settings", icon: Settings2 },
+  { href: "/", label: "面板", icon: LayoutDashboard },
+  { href: "/suites", label: "测试套件", icon: TestTube2 },
+  { href: "/compare", label: "对比运行", icon: GitCompareArrows },
+  { href: "/settings", label: "设置", icon: Settings2 },
 ];
 
 export default function Sidebar() {
@@ -38,7 +39,8 @@ export default function Sidebar() {
   const isActive = (href: string) => {
     if (href === "/") return pathname === "/";
     if (href === "/settings") return pathname === "/settings";
-    return pathname.startsWith(href) || pathname.startsWith("/run");
+    if (href === "/suites") return pathname.startsWith("/suites") || pathname.startsWith("/run");
+    return pathname.startsWith(href);
   };
 
   return (
@@ -52,14 +54,14 @@ export default function Sidebar() {
             AgentBench
           </h1>
           <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-widest">
-            EvalOps
+            评测运维
           </p>
         </div>
       </div>
 
       <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
         <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider px-3 mb-2">
-          Navigation
+          导航
         </p>
         {navItems.map(({ href, label, icon: Icon }) => (
           <Link
@@ -78,11 +80,11 @@ export default function Sidebar() {
         ))}
 
         <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider px-3 mt-5 mb-2">
-          Recent Runs
+          最近运行
         </p>
         {sortedRuns.length === 0 ? (
           <p className="text-[10px] text-[var(--text-muted)] px-3 py-2">
-            No runs yet
+            暂无运行记录
           </p>
         ) : (
           sortedRuns.map((run) => (
@@ -100,14 +102,7 @@ export default function Sidebar() {
               <span className="truncate flex-1">{run.suiteName}</span>
               <span
                 className="font-mono text-[10px] shrink-0"
-                style={{
-                  color:
-                    run.summary.avgScore > 0.7
-                      ? "var(--green)"
-                      : run.summary.avgScore > 0.4
-                        ? "var(--yellow)"
-                        : "var(--red)",
-                }}
+                style={{ color: scoreColor(run.summary.avgScore) }}
               >
                 {run.summary.avgScore.toFixed(2)}
               </span>
@@ -121,12 +116,11 @@ export default function Sidebar() {
           <div className="flex items-center gap-2 mb-1.5">
             <Zap size={12} className="text-yellow-400" />
             <span className="text-[11px] font-medium text-[var(--text-secondary)]">
-              Hackathon Demo
+              黑客松演示版
             </span>
           </div>
           <p className="text-[10px] text-[var(--text-muted)] leading-relaxed">
-            AI coding as both means &amp; product — built entirely with Claude
-            Code
+            AI 编码既是手段也是作品——完全由 Claude Code 构建
           </p>
         </div>
       </div>

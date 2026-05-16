@@ -6,10 +6,10 @@ import {
   useMemo,
   useCallback,
   ReactNode,
-  useSyncExternalStore,
 } from "react";
 import { AIProviderConfig, ProviderType, PROVIDER_DEFAULTS } from "./ai-provider";
 import { AgentEndpoint, EvaluatorConfig } from "./types";
+import { useLocalStorage, notifyStorageChange } from "./use-local-storage";
 
 export interface Settings {
   provider: ProviderType;
@@ -32,27 +32,6 @@ const DEFAULT_SETTINGS: Settings = {
 };
 
 const STORAGE_KEY = "agentbench-settings";
-
-const listeners = new Set<() => void>();
-
-function emitChange() {
-  listeners.forEach((cb) => cb());
-}
-
-function subscribe(callback: () => void) {
-  listeners.add(callback);
-  return () => {
-    listeners.delete(callback);
-  };
-}
-
-function getSnapshot(): string {
-  return localStorage.getItem(STORAGE_KEY) || "";
-}
-
-function getServerSnapshot(): string {
-  return "";
-}
 
 function parseRaw(raw: string): Settings {
   if (!raw) return DEFAULT_SETTINGS;
@@ -78,14 +57,14 @@ const SettingsContext = createContext<SettingsContextType>({
 });
 
 export function SettingsProvider({ children }: { children: ReactNode }) {
-  const raw = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  const raw = useLocalStorage(STORAGE_KEY, "");
 
   const settings = useMemo(() => parseRaw(raw), [raw]);
 
   const isConfigured = !!(settings.apiKey && settings.model);
 
   const updateSettings = useCallback((patch: Partial<Settings>) => {
-    const current = parseRaw(getSnapshot());
+    const current = parseRaw(localStorage.getItem(STORAGE_KEY) || "");
     const next = { ...current, ...patch };
     if (patch.provider && patch.provider !== current.provider) {
       const defaults = PROVIDER_DEFAULTS[patch.provider];
@@ -97,7 +76,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     } catch {
       // ignore storage errors
     }
-    emitChange();
+    notifyStorageChange();
   }, []);
 
   const toProviderConfig = useCallback((): AIProviderConfig | null => {

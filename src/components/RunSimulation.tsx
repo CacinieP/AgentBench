@@ -81,13 +81,13 @@ export default function RunSimulation({
     return {
       testCaseId: tc.id,
       actualOutput: passed
-        ? `[Simulated] Acceptable response for: ${tc.name}`
-        : `[Simulated] Response missing required elements for: ${tc.name}`,
+        ? `[模拟] 可接受的响应：${tc.name}`
+        : `[模拟] 响应缺少必需元素：${tc.name}`,
       passed,
       score: Math.min(score, 0.99),
       latencyMs: 600 + (Math.abs(seed) % 1800),
       tokenCost: 0.001 + (Math.abs(seed) % 50) / 10000,
-      error: passed ? undefined : `Score ${score.toFixed(2)} below threshold 0.60`,
+      error: passed ? undefined : `得分 ${score.toFixed(2)} 低于阈值 0.60`,
     };
   }, []);
 
@@ -181,9 +181,9 @@ export default function RunSimulation({
       <div className="glass-card p-6">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h3 className="text-sm font-semibold mb-1">Ready to Run</h3>
+            <h3 className="text-sm font-semibold mb-1">准备运行</h3>
             <p className="text-xs text-[var(--text-muted)]">
-              {cases.length} test cases will be executed {mode === "real" ? "against your agent endpoint" : "sequentially (simulation)"}
+              {cases.length} 个测试用例将{mode === "real" ? "对你的 Agent 端点" : "依次（模拟）"}执行
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -191,26 +191,26 @@ export default function RunSimulation({
               onClick={handleCancel}
               className="px-3 py-1.5 rounded-lg text-xs text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
             >
-              Cancel
+              取消
             </button>
             <button
               onClick={startRun}
               className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[var(--accent)] text-white text-sm font-medium hover:opacity-90 transition-opacity"
             >
-              Start Run
+              开始运行
             </button>
           </div>
         </div>
         {mode === "simulation" && (
           <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[var(--yellow-bg)] text-[var(--yellow)] text-xs mb-3">
             <AlertTriangle size={12} />
-            <span>Simulation mode — configure an Agent Endpoint in Settings for real testing</span>
+            <span>模拟模式 — 在设置中配置 Agent 端点以进行真实测试</span>
           </div>
         )}
         {mode === "real" && (
           <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[var(--green-bg)] text-[var(--green)] text-xs mb-3">
             <CheckCircle2 size={12} />
-            <span>Real mode — calling {settings.agentEndpoint?.type} at {maskUrl(settings.agentEndpoint?.url || "")}</span>
+            <span>真实模式 — 正在调用 {settings.agentEndpoint?.type} 地址 {maskUrl(settings.agentEndpoint?.url || "")}</span>
           </div>
         )}
         <div className="space-y-1">
@@ -245,11 +245,11 @@ export default function RunSimulation({
           </div>
           <div className="flex-1">
             <h3 className="text-sm font-semibold">
-              Run Complete {mode === "simulation" && "(Simulated)"}
+              运行完成 {mode === "simulation" && "（模拟）"}
             </h3>
             <p className="text-xs text-[var(--text-muted)]">
-              {passed} passed, {failed} failed &middot;{" "}
-              {results.reduce((s, r) => s + r.latencyMs, 0)}ms total
+              {passed} 通过, {failed} 失败 &middot;{" "}
+              {results.reduce((s, r) => s + r.latencyMs, 0)}ms 总计
             </p>
           </div>
           <button
@@ -260,7 +260,7 @@ export default function RunSimulation({
             }}
             className="px-3 py-1.5 rounded-lg text-xs font-medium bg-[var(--accent-bg)] text-[var(--accent-light)] hover:opacity-80 transition-opacity"
           >
-            Run Again
+            再次运行
           </button>
         </div>
       </div>
@@ -274,7 +274,7 @@ export default function RunSimulation({
         <div className="flex items-center gap-2">
           <Loader2 size={14} className="text-[var(--accent-light)] animate-spin" />
           <span className="text-sm font-semibold">
-            {mode === "real" ? "Testing" : "Simulating"} {Math.min(runningIdx + 1, cases.length)} of {cases.length}
+            {mode === "real" ? "测试" : "模拟"} {Math.min(runningIdx + 1, cases.length)} / {cases.length}
           </span>
         </div>
         <div className="flex items-center gap-3 text-xs">

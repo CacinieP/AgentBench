@@ -75,21 +75,21 @@ export default function Dashboard() {
     return (
       <div className="p-8 max-w-[1200px] mx-auto">
         <div className="mb-8">
-          <h1 className="text-2xl font-bold mb-1">Dashboard</h1>
+          <h1 className="text-2xl font-bold mb-1">面板</h1>
           <p className="text-sm text-[var(--text-secondary)]">
-            AI Agent regression testing &amp; quality monitoring
+            AI Agent 回归测试与质量监控
           </p>
         </div>
         <div className="text-center py-20">
           <p className="text-[var(--text-muted)] mb-4">
-            No data yet. Create a test suite to get started.
+            暂无数据。创建一个测试套件开始吧。
           </p>
           <Link
             href="/suites"
             className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--accent)] text-white text-sm font-medium hover:opacity-90 transition-opacity"
           >
             <ArrowRight size={14} />
-            Go to Test Suites
+            前往测试套件
           </Link>
         </div>
       </div>
@@ -99,23 +99,23 @@ export default function Dashboard() {
   return (
     <div className="p-8 max-w-[1200px] mx-auto">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold mb-1">Dashboard</h1>
+        <h1 className="text-2xl font-bold mb-1">面板</h1>
         <p className="text-sm text-[var(--text-secondary)]">
-          AI Agent regression testing &amp; quality monitoring
+          AI Agent 回归测试与质量监控
         </p>
       </div>
 
-      {/* Metrics */}
+      {/* 指标卡片 */}
       <div className="grid grid-cols-4 gap-4 mb-8">
         <MetricCard
-          title="Total Tests"
+          title="总测试数"
           value={metrics.totalTests}
-          subtitle={`${metrics.totalPassed} passed, ${metrics.totalFailed} failed`}
+          subtitle={`${metrics.totalPassed} 通过，${metrics.totalFailed} 失败`}
           icon={<Target size={16} />}
           accent="var(--accent)"
         />
         <MetricCard
-          title="Pass Rate"
+          title="通过率"
           value={
             metrics.totalTests > 0
               ? `${((metrics.totalPassed / metrics.totalTests) * 100).toFixed(0)}%`
@@ -125,7 +125,7 @@ export default function Dashboard() {
           accent="var(--green)"
         />
         <MetricCard
-          title="Avg Score"
+          title="平均得分"
           value={
             sortedRuns.length > 0 ? metrics.avgScore.toFixed(2) : "—"
           }
@@ -133,24 +133,24 @@ export default function Dashboard() {
           accent="var(--blue)"
         />
         <MetricCard
-          title="Total Cost"
+          title="总费用"
           value={`$${metrics.totalCost.toFixed(4)}`}
-          subtitle="across all runs"
+          subtitle="所有运行累计"
           icon={<DollarSign size={16} />}
           accent="var(--yellow)"
         />
       </div>
 
-      {/* Test Suites with score rings */}
+      {/* 测试套件卡片 */}
       {suites.length > 0 && (
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold">Test Suites</h2>
+            <h2 className="text-lg font-semibold">测试套件</h2>
             <Link
               href="/suites"
               className="text-xs text-[var(--accent-light)] hover:underline flex items-center gap-1"
             >
-              View all <ArrowRight size={12} />
+              查看全部 <ArrowRight size={12} />
             </Link>
           </div>
           <div className="grid grid-cols-3 gap-4">
@@ -168,7 +168,7 @@ export default function Dashboard() {
                         {suite.name}
                       </h3>
                       <p className="text-xs text-[var(--text-muted)]">
-                        {suite.cases.length} test cases
+                        {suite.cases.length} 个测试用例
                       </p>
                     </div>
                     {run ? (
@@ -189,7 +189,7 @@ export default function Dashboard() {
                     <div className="flex items-center gap-3 text-xs text-[var(--text-muted)]">
                       <span className="flex items-center gap-1">
                         <Shield size={10} />
-                        {run.summary.avgScore.toFixed(2)} avg
+                        {run.summary.avgScore.toFixed(2)} 均分
                       </span>
                       <span className="flex items-center gap-1">
                         <Clock size={10} />
@@ -208,10 +208,10 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Score History mini-chart */}
+      {/* 得分趋势图 */}
       {chartData.length >= 2 && (
         <div className="mb-8">
-          <h2 className="text-lg font-semibold mb-4">Score Trend</h2>
+          <h2 className="text-lg font-semibold mb-4">得分趋势</h2>
           <div className="glass-card p-5">
             <div className="flex items-end gap-3 h-32">
               {chartData.map((point, i, arr) => (
@@ -248,17 +248,17 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Recent Runs */}
+      {/* 最近运行 */}
       {sortedRuns.length > 0 && (
         <div>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold">Recent Runs</h2>
+            <h2 className="text-lg font-semibold">最近运行</h2>
             {sortedRuns.length >= 2 && (
               <Link
                 href="/compare"
                 className="text-xs text-[var(--accent-light)] hover:underline flex items-center gap-1"
               >
-                Compare runs <BarChart3 size={12} />
+                对比运行 <BarChart3 size={12} />
               </Link>
             )}
           </div>
@@ -267,25 +267,25 @@ export default function Dashboard() {
               <thead>
                 <tr className="border-b border-[var(--border)]">
                   <th className="text-left text-xs text-[var(--text-muted)] uppercase tracking-wider px-5 py-3">
-                    Suite
+                    套件
                   </th>
                   <th className="text-left text-xs text-[var(--text-muted)] uppercase tracking-wider px-5 py-3">
-                    Version
+                    版本
                   </th>
                   <th className="text-left text-xs text-[var(--text-muted)] uppercase tracking-wider px-5 py-3">
-                    Result
+                    结果
                   </th>
                   <th className="text-left text-xs text-[var(--text-muted)] uppercase tracking-wider px-5 py-3">
-                    Score
+                    得分
                   </th>
                   <th className="text-left text-xs text-[var(--text-muted)] uppercase tracking-wider px-5 py-3">
-                    Latency
+                    延迟
                   </th>
                   <th className="text-left text-xs text-[var(--text-muted)] uppercase tracking-wider px-5 py-3">
-                    Cost
+                    费用
                   </th>
                   <th className="text-left text-xs text-[var(--text-muted)] uppercase tracking-wider px-5 py-3">
-                    Time
+                    时间
                   </th>
                 </tr>
               </thead>
@@ -305,9 +305,9 @@ export default function Dashboard() {
                           {run.agentVersion}
                         </span>
                         {!run.agentVersion.startsWith('sim-') ? (
-                          <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-[var(--green-bg)] text-[var(--green)]">LIVE</span>
+                          <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-[var(--green-bg)] text-[var(--green)]">真实</span>
                         ) : (
-                          <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-[var(--yellow-bg)] text-[var(--yellow)]">SIM</span>
+                          <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-[var(--yellow-bg)] text-[var(--yellow)]">模拟</span>
                         )}
                       </div>
                     </td>

@@ -1,34 +1,34 @@
 import { NextRequest, NextResponse } from "next/server";
 import { callAI, AIProviderConfig } from "@/lib/ai-provider";
 
-const SYSTEM_PROMPT = `You are an AI agent quality analyst. Analyze the provided test run data and respond with valid JSON only.
-Your response must be a JSON object with exactly these fields:
-- summary: A 2-3 sentence analysis string
-- regressionPatterns: Array of 2-3 identified pattern strings
-- suggestedFixes: Array of 2-3 actionable fix strings
-- riskAssessment: One of "low", "medium", or "high"`;
+const SYSTEM_PROMPT = `你是一位 AI Agent 质量分析师。分析提供的测试运行数据并仅回复有效 JSON。
+你的回复必须是一个 JSON 对象，包含以下字段：
+- summary: 2-3 句话的分析字符串
+- regressionPatterns: 2-3 个已识别模式的字符串数组
+- suggestedFixes: 2-3 个可操作修复建议的字符串数组
+- riskAssessment: "low"、"medium" 或 "high" 之一`;
 
 function buildUserPrompt(baseline: string, candidate: string, testCases: unknown[]): string {
-  return `Analyze this test run comparison.
+  return `分析以下测试运行对比。
 
-Baseline version: ${baseline}
-Candidate version: ${candidate}
-Test cases: ${JSON.stringify(testCases, null, 2)}
+基准版本: ${baseline}
+候选版本: ${candidate}
+测试用例: ${JSON.stringify(testCases, null, 2)}
 
-Respond with valid JSON only.`;
+仅回复有效 JSON。`;
 }
 
 const DEMO_RESPONSE = {
   summary:
-    "Comparison between baseline and candidate: the candidate version shows improvement in response quality and empathy. Key areas of change include more detailed resolution options and better escalation paths.",
+    "基准版本与候选版本的对比：候选版本在回复质量和同理心方面有所提升。关键改进点包括更详细的解决方案选项和更好的升级路径。",
   regressionPatterns: [
-    "Baseline responses were uniformly brief, suggesting insufficient system prompt guidance",
-    "Missing process explanations correlate with lower scores across all baseline runs",
+    "基准版本回复普遍过于简短，提示系统提示词引导不足",
+    "缺少流程说明与所有基准版本中较低的得分相关",
   ],
   suggestedFixes: [
-    "Enhance system prompt with empathy guidelines and required response elements",
-    "Add completeness checklist to ensure all resolution components are present",
-    "Consider model upgrade as primary quality driver and validate with A/B testing",
+    "通过同理心指南和必需的回复要素增强系统提示词",
+    "添加完整性检查清单，确保所有解决方案组件均已包含",
+    "将模型升级作为主要质量驱动因素，并通过 A/B 测试验证",
   ],
   riskAssessment: "low",
 };
@@ -74,7 +74,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(safeResponse, { status: 200 });
   } catch (e) {
-    const message = e instanceof Error ? e.message : "Failed to generate AI analysis";
+    const message = e instanceof Error ? e.message : "AI 分析生成失败";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

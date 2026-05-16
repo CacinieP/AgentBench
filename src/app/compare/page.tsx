@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import {
   GitCompareArrows,
   TrendingUp,
@@ -48,6 +48,46 @@ export default function ComparePage() {
   const [aiAnalysis, setAiAnalysis] = useState<AIAnalysis | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState("");
+
+  // Close pickers on Escape or click outside
+  const baselinePickerRef = useRef<HTMLDivElement>(null);
+  const candidatePickerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!showBaselinePicker && !showCandidatePicker) return;
+
+    const handler = (e: MouseEvent | KeyboardEvent) => {
+      if (e instanceof KeyboardEvent) {
+        if (e.key === "Escape") {
+          setShowBaselinePicker(false);
+          setShowCandidatePicker(false);
+        }
+        return;
+      }
+      const target = e.target as Node;
+      if (
+        showBaselinePicker &&
+        baselinePickerRef.current &&
+        !baselinePickerRef.current.contains(target)
+      ) {
+        setShowBaselinePicker(false);
+      }
+      if (
+        showCandidatePicker &&
+        candidatePickerRef.current &&
+        !candidatePickerRef.current.contains(target)
+      ) {
+        setShowCandidatePicker(false);
+      }
+    };
+
+    document.addEventListener("keydown", handler as EventListener);
+    document.addEventListener("mousedown", handler as EventListener);
+    return () => {
+      document.removeEventListener("keydown", handler as EventListener);
+      document.removeEventListener("mousedown", handler as EventListener);
+    };
+  }, [showBaselinePicker, showCandidatePicker]);
 
   const baseline = runs.find((r) => r.id === baselineId);
   const candidate = runs.find((r) => r.id === candidateId);
@@ -107,12 +147,12 @@ export default function ComparePage() {
         const tc = baselineSuite?.cases.find((c) => c.id === br.testCaseId)
           || candidateSuite?.cases.find((c) => c.id === br.testCaseId);
         const tcName = tc?.name || br.testCaseId;
-        if (br.passed !== cr.passed && Math.abs(delta) < 0.15) {
-          flks.push({ name: tcName, baseline: br.passed, candidate: cr.passed });
-        } else if (delta < -0.05) {
+        if (delta < -0.05) {
           regs.push({ name: tcName, baseline: br.score, candidate: cr.score });
         } else if (delta > 0.05) {
           imps.push({ name: tcName, baseline: br.score, candidate: cr.score });
+        } else if (br.passed !== cr.passed) {
+          flks.push({ name: tcName, baseline: br.passed, candidate: cr.passed });
         }
       }
     });
@@ -187,17 +227,17 @@ export default function ComparePage() {
     return (
       <div className="p-8 max-w-[1200px] mx-auto">
         <div className="mb-8">
-          <h1 className="text-2xl font-bold mb-1">Compare Runs</h1>
+          <h1 className="text-2xl font-bold mb-1">对比运行</h1>
           <p className="text-sm text-[var(--text-secondary)]">
-            Side-by-side regression analysis between versions
+            版本间回归对比分析
           </p>
         </div>
         <div className="text-center py-20">
           <p className="text-[var(--text-muted)] mb-2">
-            Need at least 2 runs to compare.
+            至少需要 2 次运行才能对比。
           </p>
           <p className="text-xs text-[var(--text-muted)]">
-            Run tests on a suite to generate comparison data.
+            对测试套件运行测试以生成对比数据。
           </p>
         </div>
       </div>
@@ -208,14 +248,14 @@ export default function ComparePage() {
     return (
       <div className="p-8 max-w-[1200px] mx-auto">
         <div className="mb-8">
-          <h1 className="text-2xl font-bold mb-1">Compare Runs</h1>
+          <h1 className="text-2xl font-bold mb-1">对比运行</h1>
           <p className="text-sm text-[var(--text-secondary)]">
-            Side-by-side regression analysis between versions
+            版本间回归对比分析
           </p>
         </div>
         <div className="text-center py-20">
           <p className="text-[var(--text-muted)]">
-            Select two runs to compare using the dropdowns above.
+            请使用上方下拉菜单选择两次运行进行对比。
           </p>
         </div>
       </div>
@@ -237,9 +277,9 @@ export default function ComparePage() {
       )}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold mb-1">Compare Runs</h1>
+          <h1 className="text-2xl font-bold mb-1">对比运行</h1>
           <p className="text-sm text-[var(--text-secondary)]">
-            Side-by-side regression analysis between versions
+            版本间回归对比分析
           </p>
         </div>
         <button
@@ -259,10 +299,10 @@ export default function ComparePage() {
             <Sparkles size={14} />
           )}
           {aiLoading
-            ? "Analyzing..."
+            ? "分析中..."
             : showAnalysis
-              ? "Refresh Analysis"
-              : "AI Analysis"}
+              ? "刷新分析"
+              : "AI 分析"}
         </button>
       </div>
 
@@ -270,7 +310,7 @@ export default function ComparePage() {
       <div className="glass-card p-5 mb-6">
         <div className="grid grid-cols-[1fr_auto_1fr] gap-6 items-center">
           <div className="text-center relative">
-            <p className="text-xs text-[var(--text-muted)] mb-2">BASELINE</p>
+            <p className="text-xs text-[var(--text-muted)] mb-2">基准版本</p>
             <button
               onClick={() => {
                 setShowBaselinePicker(!showBaselinePicker);
@@ -286,7 +326,7 @@ export default function ComparePage() {
               <ChevronDown size={12} />
             </button>
             {showBaselinePicker && (
-              <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1 z-10 glass-card p-1 w-48">
+              <div ref={baselinePickerRef} className="absolute left-0 top-full mt-1 z-10 glass-card p-1 w-48">
                 {sortedRuns.map((r) => (
                   <button
                     key={r.id}
@@ -334,11 +374,11 @@ export default function ComparePage() {
               style={{ color: getDeltaColor(scoreDelta) }}
             >
               {scoreDelta > 0 ? "+" : ""}
-              {scoreDelta.toFixed(2)} score delta
+              {scoreDelta.toFixed(2)} 得分差异
             </span>
           </div>
           <div className="text-center relative">
-            <p className="text-xs text-[var(--text-muted)] mb-2">CANDIDATE</p>
+            <p className="text-xs text-[var(--text-muted)] mb-2">候选版本</p>
             <button
               onClick={() => {
                 setShowCandidatePicker(!showCandidatePicker);
@@ -354,7 +394,7 @@ export default function ComparePage() {
               <ChevronDown size={12} />
             </button>
             {showCandidatePicker && (
-              <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1 z-10 glass-card p-1 w-48">
+              <div ref={candidatePickerRef} className="absolute right-0 top-full mt-1 z-10 glass-card p-1 w-48">
                 {sortedRuns.map((r) => (
                   <button
                     key={r.id}
@@ -387,28 +427,28 @@ export default function ComparePage() {
       <div className="grid grid-cols-4 gap-4 mb-6">
         {[
           {
-            label: "Score",
+            label: "得分",
             value: scoreDelta.toFixed(3),
             raw: scoreDelta,
             display: `${baseline.summary.avgScore.toFixed(2)} → ${candidate.summary.avgScore.toFixed(2)}`,
             invert: false,
           },
           {
-            label: "Pass Rate",
+            label: "通过率",
             value: `${(passRateDelta * 100).toFixed(0)}%`,
             raw: passRateDelta,
             display: `${baseline.summary.passed}/${baseline.summary.total} → ${candidate.summary.passed}/${candidate.summary.total}`,
             invert: false,
           },
           {
-            label: "Latency",
+            label: "延迟",
             value: `${latencyDelta > 0 ? "+" : ""}${(latencyDelta / 1000).toFixed(1)}s`,
             raw: latencyDelta,
             display: `${(baseline.summary.totalLatencyMs / 1000).toFixed(1)}s → ${(candidate.summary.totalLatencyMs / 1000).toFixed(1)}s`,
             invert: true,
           },
           {
-            label: "Cost",
+            label: "费用",
             value: `${costDelta > 0 ? "+" : ""}$${costDelta.toFixed(4)}`,
             raw: costDelta,
             display: `$${baseline.summary.totalTokenCost.toFixed(4)} → $${candidate.summary.totalTokenCost.toFixed(4)}`,
@@ -435,7 +475,7 @@ export default function ComparePage() {
 
       {/* Visual comparison bars */}
       <div className="glass-card p-5 mb-6">
-        <h3 className="text-sm font-semibold mb-4">Visual Comparison</h3>
+        <h3 className="text-sm font-semibold mb-4">可视化对比</h3>
         <div className="space-y-3">
           {baseline.results.map((br) => {
             const cr = candidate.results.find(
@@ -503,25 +543,25 @@ export default function ComparePage() {
       {/* Test-by-test comparison table */}
       <div className="glass-card overflow-hidden mb-6">
         <div className="px-5 py-3 border-b border-[var(--border)] bg-[var(--bg-secondary)]">
-          <h3 className="text-sm font-semibold">Test-by-Test Comparison</h3>
+          <h3 className="text-sm font-semibold">逐项对比</h3>
         </div>
         <table className="w-full">
           <thead>
             <tr className="border-b border-[var(--border)]">
               <th className="text-left text-xs text-[var(--text-muted)] uppercase tracking-wider px-5 py-2.5">
-                Test Case
+                测试用例
               </th>
               <th className="text-center text-xs text-[var(--text-muted)] uppercase tracking-wider px-5 py-2.5">
-                Baseline
+                基准
               </th>
               <th className="text-center text-xs text-[var(--text-muted)] uppercase tracking-wider px-5 py-2.5">
-                Candidate
+                候选
               </th>
               <th className="text-center text-xs text-[var(--text-muted)] uppercase tracking-wider px-5 py-2.5">
-                Delta
+                差异
               </th>
               <th className="text-left text-xs text-[var(--text-muted)] uppercase tracking-wider px-5 py-2.5">
-                Status
+                状态
               </th>
             </tr>
           </thead>
@@ -568,15 +608,15 @@ export default function ComparePage() {
                   </td>
                   <td className="px-5 py-3">
                     {!cr ? (
-                      <StatusBadge status="warning" label="Missing" />
-                    ) : br.passed !== cr.passed && Math.abs(delta) < 0.15 ? (
-                      <StatusBadge status="warning" label="Flaky" />
+                      <StatusBadge status="warning" label="缺失" />
                     ) : delta < -0.05 ? (
-                      <StatusBadge status="fail" label="Regression" />
+                      <StatusBadge status="fail" label="回归" />
                     ) : delta > 0.05 ? (
-                      <StatusBadge status="pass" label="Improved" />
+                      <StatusBadge status="pass" label="改进" />
+                    ) : br.passed !== cr.passed ? (
+                      <StatusBadge status="warning" label="不稳定" />
                     ) : (
-                      <StatusBadge status="warning" label="Unchanged" />
+                      <StatusBadge status="warning" label="未变" />
                     )}
                   </td>
                 </tr>
@@ -592,12 +632,12 @@ export default function ComparePage() {
           <div className="flex items-center gap-2 mb-3">
             <CheckCircle2 size={14} style={{ color: "var(--green)" }} />
             <h3 className="text-sm font-semibold">
-              Improvements ({improvements.length})
+              改进 ({improvements.length})
             </h3>
           </div>
           {improvements.length === 0 ? (
             <p className="text-xs text-[var(--text-muted)]">
-              No significant improvements detected
+              未检测到显著改进
             </p>
           ) : (
             <div className="space-y-2">
@@ -622,12 +662,12 @@ export default function ComparePage() {
           <div className="flex items-center gap-2 mb-3">
             <XCircle size={14} style={{ color: "var(--red)" }} />
             <h3 className="text-sm font-semibold">
-              Regressions ({regressions.length})
+              回归 ({regressions.length})
             </h3>
           </div>
           {regressions.length === 0 ? (
             <p className="text-xs text-[var(--text-muted)]">
-              No regressions detected — all clear!
+              未检测到回归 — 一切正常！
             </p>
           ) : (
             <div className="space-y-2">
@@ -652,12 +692,12 @@ export default function ComparePage() {
           <div className="flex items-center gap-2 mb-3">
             <AlertTriangle size={14} style={{ color: "var(--yellow)" }} />
             <h3 className="text-sm font-semibold">
-              Flaky ({flakes.length})
+              不稳定 ({flakes.length})
             </h3>
           </div>
           {flakes.length === 0 ? (
             <p className="text-xs text-[var(--text-muted)]">
-              No flaky tests detected
+              未检测到不稳定测试
             </p>
           ) : (
             <div className="space-y-2">
@@ -684,27 +724,27 @@ export default function ComparePage() {
         <div className="glass-card p-6 fade-in">
           <div className="flex items-center gap-2 mb-4">
             <Sparkles size={16} className="text-[var(--accent-light)]" />
-            <h3 className="text-base font-semibold">AI-Powered Analysis</h3>
+            <h3 className="text-base font-semibold">AI 智能分析</h3>
             {isConfigured ? (
               <span className="text-[10px] px-2 py-0.5 rounded-full bg-[var(--green-bg)] text-[var(--green)]">
-                LIVE
+                真实
               </span>
             ) : (
               <span className="text-[10px] px-2 py-0.5 rounded-full bg-[var(--yellow-bg)] text-[var(--yellow)]">
-                DEMO
+                演示
               </span>
             )}
           </div>
           {aiLoading ? (
             <div className="flex items-center gap-2 py-8 justify-center text-sm text-[var(--text-muted)]">
               <Loader2 size={14} className="animate-spin" />
-              Analyzing with AI...
+              AI 分析中...
             </div>
           ) : (
             <>
               {aiError && (
                 <p className="text-xs text-[var(--red)] bg-[var(--red-bg)] p-2 rounded-lg mb-4">
-                  {aiError} — showing demo analysis
+                  {aiError} — 显示演示分析
                 </p>
               )}
               <div className="space-y-4">
@@ -716,7 +756,7 @@ export default function ComparePage() {
                 {analysis.regressionPatterns.length > 0 && (
                   <div>
                     <h4 className="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wider mb-2">
-                      Identified Patterns
+                      已识别模式
                     </h4>
                     <ul className="space-y-1.5">
                       {analysis.regressionPatterns.map((p, i) => (
@@ -738,7 +778,7 @@ export default function ComparePage() {
                 {analysis.suggestedFixes.length > 0 && (
                   <div>
                     <h4 className="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wider mb-2">
-                      Suggested Fixes
+                      修复建议
                     </h4>
                     <ul className="space-y-1.5">
                       {analysis.suggestedFixes.map((f, i) => (
@@ -763,7 +803,7 @@ export default function ComparePage() {
                 )}
                 <div className="flex items-center gap-2 pt-2 border-t border-[var(--border)]">
                   <span className="text-xs text-[var(--text-muted)]">
-                    Risk Assessment:
+                    风险评估：
                   </span>
                   <StatusBadge
                     status={
