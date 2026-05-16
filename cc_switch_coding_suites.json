@@ -1,0 +1,521 @@
+{
+  "exportVersion": "1.0",
+  "exportedAt": "2026-05-17 01:32",
+  "source": "CC Switch SQLite → JSONL 会话提取",
+  "totalConversationsScanned": 384,
+  "codingFilesFound": 284,
+  "suites": [
+    {
+      "id": "cc-switch-coding",
+      "name": "CC Switch 编程任务回归",
+      "description": "从 284 个 Claude Code 会话中提取的 20 个编程任务，用于回归测试编码 Agent 表现。导出时间: 2026-05-17 01:32",
+      "agentType": "代码审查",
+      "cases": [
+        {
+          "id": "cc-9abe204d",
+          "name": "Explore the linguistwantstech codebase to understand: 1....",
+          "input": "Explore the linguistwantstech codebase to understand:\n1. The overall project structure\n2. The CLI entry point and how it works\n3. The frontend code (especially any visual display issues)\n4. Any references to \"NUL\", \"qwen\", or similar problematic text\n5. The package.json configuration\n6. Any web/UI components that display the linguist character\n\nProvide a comprehensive summary of:\n- File structure\n- Main entry points\n- Frontend/rendering code\n- Any obvious robustness issues\n- Where the linguist character is defined and displayed",
+          "expectedOutput": "I'll explore the linguistwantstech codebase systematically to understand its structure and identify the issues you mentioned. Let me start by examining the overall project structure.",
+          "category": "coding",
+          "evaluator": {
+            "type": "contains",
+            "threshold": 0.3,
+            "caseInsensitive": true
+          }
+        },
+        {
+          "id": "cc-1a977097",
+          "name": "Create first-principles tutorial markdown files for ALL 7...",
+          "input": "Create first-principles tutorial markdown files for ALL 7 subfolders under ~/projects/learning/. Each file named `foldername-basics.md`, placed in its subfolder. Written in Chinese, starting from fundamental concepts, covering all exam points, with section headers, key formulas, and examples. Be concise but comprehensive.\n\nCreate ALL 7 files:\n\n1. ~/projects/learning/01-财务管理基础/01-财务管理基础-basics.md\nTopics: 财务管理概述(目标/利益相关者/金融工具与市场), 财务报表分析(比率分析/杜邦分析/管理用报表), 财务预测(内含增长率/可持续增长率), 价值评估基础(利率/货币时间价值/风险与报酬CAPM/债券股票估值)\n\n2. ~/projects/learning/02-长期投资决策/02-长期投资决策-basics.md\nTopics: 资本成本(债务/普通股/WACC), 投资项目资本预算(NPV/IRR/PI/回收期/现金流量), 期权价值评估(概念/策略/实物期权), 企业价值评估(DCF/相对价值)\n\n3. ~/projects/learning/03-长期筹资决策/03-长期筹资决策-basics.md\nTopics: 资本结构(MM理论/杠杆系数), 长期筹资(债务/普通股/混合筹资/租赁), 股利分配/股票分割与回购\n\n4. ~/projects/learning/04-营运资本管理/04-营运资本管理-basics.md\nTopics: 营运资本管理策略, 现金管理(Baumol/Miller-Orr), 应收账款管理, 存货管理(EOQ), 短期债务管理\n\n5. ~/projects/learning/05-成本管理会计基础/05-成本管理会计基础-basics.md\nTopics: 成本概念与分类, 管理决策与成本管理会计, 环境变化影响(ESG/数字化/全球竞争)\n\n6. ~/projects/learning/06-成本计算/06-成本计算-basics.md\nTopics: 产品成本计算(品种法/分批法/分步法), 标准成本法(制定/差异分析), 作业成本法和生命周期成本法\n\n7. ~/projects/learning/07-管理会计/07-管理会计-basics.md\nTopics: 本量利分析(保本/保利/敏感分析), 短期经营决策(自制外购/特殊订单/约束资源), 全面预算, 责任会计(责任中心/内部转移价格), 业绩评价(EVA/平衡计分卡/KPI)\n\nIMPORTANT: Create ALL 7 files using the Write tool.",
+          "expectedOutput": "API Error: Request rejected (429) · The service may be temporarily overloaded, please try again later",
+          "category": "coding",
+          "evaluator": {
+            "type": "contains",
+            "threshold": 0.3,
+            "caseInsensitive": true
+          }
+        },
+        {
+          "id": "cc-c3eabbc7",
+          "name": "Search the LiFEBOOK codebase for any existing width or...",
+          "input": "Search the LiFEBOOK codebase for any existing width or layout-related patterns:\n\n1. Search for any references to \"fullWidth\", \"full-width\", \"full_width\", \"pageWidth\", \"page-width\", \"contentWidth\", \"content-width\", \"layout\" across all TypeScript/TSX files.\n\n2. Search for \"column\" references in editor extensions and the slash menu — how are columns created via the slash menu? Check `src/components/editor/Editor.tsx` handleSlashSelect for column handling.\n\n3. Look at how Notion implements column layout — it uses a \"column_list\" block type containing \"column\" children. Check if LiFEBOOK has this pattern already and how it renders.\n\n4. Check `src/components/editor/extensions/` — list ALL extension files and identify any that relate to layout (column, width, divider, etc.).\n\n5. Look at the slash menu items in `Editor.tsx` — search for \"column\", \"columns\" in the slash menu section to understand what column-related slash commands exist.\n\n6. Check how images are currently handled width-wise — look at the Image extension configuration and how images render in the editor.\n\nReport all findings with file paths and line numbers.",
+          "expectedOutput": "I'll conduct a comprehensive search across the LiFEBOOK codebase for width/layout-related patterns. Let me run multiple searches in parallel.",
+          "category": "coding",
+          "evaluator": {
+            "type": "contains",
+            "threshold": 0.3,
+            "caseInsensitive": true
+          }
+        },
+        {
+          "id": "cc-60f89034",
+          "name": "Create a README.md in each of the 7 subfolders under...",
+          "input": "Create a README.md in each of the 7 subfolders under E:\\CICPA-Learning\\CICPA-Financial Management\\. Each README.md should contain the corresponding module's exam syllabus content.\n\nRead the file E:\\CICPA-Learning\\CICPA-Financial Management\\考试大纲.md first to get the full content, then extract each section and write it into the matching subfolder's README.md.\n\nThe 7 subfolders are:\n01-财务管理基础, 02-长期投资决策, 03-长期筹资决策, 04-营运资本管理, 05-成本管理会计基础, 06-成本计算, 07-管理会计\n\nFor each README.md:\n- Title: the section name as H1\n- Source line: \"> **来源**：[中国注册会计师协会](https://www.cicpa.org.cn/xxfb/tzgg/202603/W020260304555799366109.pdf)\"\n- Include the full exam content with 能力等级 for that section\n- Use bullet lists or tables with 能力等级 noted inline\n\nWrite ALL 7 files. Do not skip any.",
+          "expectedOutput": "API Error: 429 {\"error\":{\"code\":\"1302\",\"message\":\"Rate limit reached for requests\"},\"request_id\":\"202604201444085a462ab5715c476d\"}",
+          "category": "coding",
+          "evaluator": {
+            "type": "contains",
+            "threshold": 0.3,
+            "caseInsensitive": true
+          }
+        },
+        {
+          "id": "cc-06cc255c",
+          "name": "根据这个仓库实际情况和这个建议 修改开源协议安排...",
+          "input": "根据这个仓库实际情况和这个建议 修改开源协议安排 我这边**没法直接读取这两个仓库页面内容**，所以不能装作已经看过仓库后下判断。基于你这类学习仓的常见结构，我给你一版**最简洁但尽量全覆盖**的建议：\n\n### 直接建议\n\n**不要整仓单协议。改成文档 / 代码分层许可。**\n\n- **笔记、总结、文档**\n    \n    用 `CC BY-NC-SA 4.0`\n    \n- **脚本、工具代码**\n    \n    用 `MIT`  \n    \n    如果你更在意专利条款，用 `Apache-2.0`\n    \n\n### 为什么这么配\n\n- 学习仓如果全用 `MIT`\n    \n    对文档太宽松，容易被人直接搬运做商业资料包\n    \n- 学习仓如果全用 `GPL`\n    \n    不太适合以笔记、知识整理为主的仓库\n    \n- `CC BY-NC-SA 4.0 + MIT`\n    \n    基本是这类仓最稳的组合：\n    \n    - 允许学习、转载、改写\n    - 限制直接商用倒卖\n    - 代码仍然方便复用\n\n### 你要特别补的一条\n\n**你的协议只覆盖你原创的内容。**\n\n如果仓库里有这些东西：\n\n- 教材原文\n- 网课讲义\n- 真题原文\n- 机构资料\n- 大段法规/标准的非自由转载内容\n- 截图或受限材料\n\n那**不能因为你挂了开源协议就自动合法**。  \n\n做法是：\n\n- 保留你自己的总结和重写内容\n- 删除或弱化第三方原文搬运\n- 在 README 里明确：\n    - 第三方内容权利归原权利人\n    - 不在本仓库授权范围内\n    - 如有侵权可联系删除\n\n### 最小落地方案\n\n仓库里这样放：\n\n- `LICENSE-CODE`\n- `LICENSE-DOCS`\n- `README.md` 里加一段许可说明\n- 最好再加一个 `NOTICE` 或版权说明\n\n### README 里建议写清楚 4 件事\n\n1. `docs/ notes/ summary/` 等目录适用 `CC BY-NC-SA 4.0`\n2. `scripts/ tools/ code/` 等目录适用 `MIT`\n3. 第三方材料不在你的授权范围内\n4. 商业使用、转载、改编的边界\n\n### 如果你只想让我给一句最终拍板\n\n**推荐你把这两个仓库都改成：文档 `CC BY-NC-SA 4.0`，代码 `MIT`，并在 README 里明确第三方资料不授权。**\n\n### 哪些情况要再收紧\n\n如果你特别担心：\n\n- 被搬运\n- 被洗稿\n- 被直接做付费资料\n\n可以把文档改成：\n\n- `CC BY-NC-ND 4.0`\n\n但这会明显降低协作性。  \n\n通常我还是更建议 `CC BY-NC-SA 4.0`。\n\n### 最后一句\n\n如果这两个仓库里**第三方考试材料占比很高**，那重点不是换哪个协议，而是**先清内容，再挂协议**。否则协议本身救不了版权风险。",
+          "expectedOutput": "让我先查看一下这个仓库，以便了解它的结构。",
+          "category": "coding",
+          "evaluator": {
+            "type": "contains",
+            "threshold": 0.3,
+            "caseInsensitive": true
+          }
+        },
+        {
+          "id": "cc-1061d7c2",
+          "name": "Do an exhaustive final bug sweep of E:\\LiFEBOOK. Check ALL...",
+          "input": "Do an exhaustive final bug sweep of E:\\LiFEBOOK. Check ALL files that haven't been reviewed in the last 3 rounds, and re-check recently modified code for correctness.\n\nFocus areas:\n1. src/components/editor/PageHeader.tsx - any bugs?\n2. src/components/editor/SlashMenu.tsx - functional bugs only\n3. src/components/ai/AIPanel.tsx - re-check the full file for any issues\n4. src/components/sidebar/Breadcrumb.tsx - any bugs?\n5. src/components/common/Toaster.tsx - any bugs?\n6. src/hooks/useResizable.ts - any bugs?\n7. src/lib/utils.ts - any bugs?\n8. vite.config.ts - the empty vendor-react chunk issue, any real problems?\n9. electron/main.ts - re-check the FULL file for any remaining issues in old AND new code\n10. src/stores/toasts.ts - any bugs?\n11. Check ALL test files for correctness - do they actually test the right behavior?\n12. Check src/types/index.ts - any type definitions that don't match the Prisma schema or actual usage?\n\nAlso check for:\n- Any CSS class references that don't exist (Tailwind misconfig)\n- Any imports that reference non-existent exports\n- Any `as any` casts that hide real type errors\n- Missing cleanup in useEffect returns\n- Event listeners that aren't cleaned up\n- Memory leaks (missing AbortController cleanup, etc.)\n\nReport ONLY concrete runtime bugs with file:line. Be extremely brief - one line per bug max.",
+          "expectedOutput": "I'll perform an exhaustive bug sweep of the specified files. Let me start by reading all the files in parallel.",
+          "category": "coding",
+          "evaluator": {
+            "type": "contains",
+            "threshold": 0.3,
+            "caseInsensitive": true
+          }
+        },
+        {
+          "id": "cc-2a8e43cc",
+          "name": "探索这个项目的代码库结构，了解： 1. 这是什么类型的应用 2. 主要的源代码文件和目录结构 3. 项目的功能模块...",
+          "input": "探索这个项目的代码库结构，了解：\n1. 这是什么类型的应用\n2. 主要的源代码文件和目录结构\n3. 项目的功能模块\n4. 是否有配置文件、文档等\n5. 使用的技术栈",
+          "expectedOutput": "我将探索这个项目的代码库结构，了解其组成和技术栈。",
+          "category": "coding",
+          "evaluator": {
+            "type": "contains",
+            "threshold": 0.3,
+            "caseInsensitive": true
+          }
+        },
+        {
+          "id": "cc-bd2749c1",
+          "name": "This session is being continued from a previous...",
+          "input": "This session is being continued from a previous conversation that ran out of context. The summary below covers the earlier portion of the conversation.\n\nSummary:\n1. Primary Request and Intent:\n   - The user wants a complete guide for typing Russian (Cyrillic) using a **standard US keyboard** on **Windows 11**.\n   - Critical constraint stated in third message: \"我只用windows官方美式国际键盘\" — they **only use Windows official US International keyboard** and Windows built-in methods. No third-party tools, no AutoHotkey, no custom layouts.\n   - The user wants the guide **cross-verified** against official sources and **written to a local markdown file** at `F:\\Russian\\`.\n\n2. Key Technical Concepts:\n   - **Standard Russian layout (kbdru.dll)**: The default Russian keyboard, positions don't correspond to QWERTY sounds (e.g., Q→Й, W→Ц, E→У, R→К)\n   - **Russian Mnemonic layout (kbdrum.dll, KLID: 00020419)**: Official Windows built-in phonetic layout available since Windows 8. Maps keys by sound (e.g., Q→Й, R→Р, T→Т, S→С, D→Д). Uses **9 dead keys** for letters without direct phonetic matches (ts→ц, sh→ш, ch→ч, zh→ж, etc.)\n   - **Windows Alt codes**: Numpad-based input for Cyrillic characters (e.g., Alt+1040=А, Alt+1071=Я)\n   - **Three official Windows Russian layouts**: Standard (kbdru.dll), Typewriter (kbdru1.dll), Mnemonic (kbdrum.dll)\n   - Switching: `Win+Space` or `Alt+Shift`\n\n3. Files and Code Sections:\n   - **`F:\\Russian\\美式键盘输入俄语指南.md`** — Created in the first write pass. This is the main output file. Contains the full guide with 4 methods, key mapping tables, AutoHotkey script, Alt codes reference, and practice phrases.\n     - **Problem**: This version recommends third-party tools (AutoHotkey, community phonetic layouts, MKLC) which contradicts the user's \"only Windows official\" constraint.\n     - **Problem**: The phonetic mapping table may not match the actual Windows Russian Mnemonic (kbdrum.dll) layout exactly. For example, original guide maps W→В but actual Windows Mnemonic maps W→Ц.\n     - **Needs rewrite** with cross-verified data from official sources.\n\n4. Errors and fixes:\n   - **Web search rate limiting**: Multiple search queries hit HTTP 429 errors. Worked around by retrying and using alternative queries.\n   - **Microsoft Learn kbdrum page**: The interactive keyboard viewer didn't render as text in web reader — it's an interactive SVG. Could not extract exact key mappings from that page directly.\n   - **Content accuracy issue**: The first version of the guide included non-Windows-official methods (AutoHotkey scripts, third-party phonetic layouts, MKLC). User explicitly corrected this in third message: \"我只用windows官方美式国际键盘\" — only use Windows official methods.\n   - **Phonetic mapping accuracy**: The phonetic layout in the first version was a generic/community phonetic mapping, NOT the official Windows Russian Mnemonic (kbdrum.dll) mapping. These differ in some key assignments.\n\n5. Problem Solving:\n   - Successfully verified the **standard Russian layout (kbdru.dll)** key mapping from winrus.com — confirmed correct in the original guide.\n   - Successfully retrieved all **Alt codes** for 33 Russian letters from altcodeunicode.com (А=Alt+1040 through Я=Alt+1071).\n   - Discovered that Windows has an official **Russian Mnemonic** (phonetic) layout (kbdrum.dll) built into Windows since Windows 8 — this is the ideal solution for the user but was NOT mentioned in the original guide.\n   - The Russian Mnemonic layout uses dead keys for complex letters (ц, ш, щ, ч, ж, etc.) which is different from the simple one-to-one mapping in the original guide.\n   - Cross-verification data has been collected but the **rewritten guide has NOT yet been written to disk**.\n\n6. All user messages:\n   - \"给一份美式键盘输入俄罗斯语的完全指南\" (Give me a complete guide for typing Russian with a US keyboard)\n   - \"先写入本地md 但我的键盘是美式键盘 把指南写入本地md\" (Write to local md first, my keyboard is US keyboard, write the guide to local md)\n   - \"我只用windows官方美式国际键盘 交叉验证写入\" (I only use Windows official US International keyboard, cross-verify and write)\n\n7. Pending Tasks:\n   - **Rewrite `F:\\Russian\\美式键盘输入俄语指南.md`** with cross-verified content that ONLY covers Windows official methods:\n     1. Windows built-in standard Russian layout (kbdru.dll) with verified key mapping\n     2. Windows built-in Russian Mnemonic layout (kbdrum.dll) with accurate phonetic mapping and dead key documentation\n     3. Alt code reference table (verified from altcodeunicode.com)\n     4. Remove all third-party recommendations (AutoHotkey, MKLC, community layouts, Punto Switcher, etc.)\n\n8. Current Work:\n   I was in the process of cross-verifying the Windows Russian keyboard layout data from official sources. I had completed gathering verification data from:\n   - altcodeunicode.com (Alt codes — fully retrieved and verified)\n   - winrus.com (confirmed 3 official Russian layouts, standard layout verified)\n   - learn.microsoft.com (confirmed kbdrum.dll exists, KLID 00020419)\n   - kbdlayout.info (confirmed kbdrum.dll metadata, AltGr support)\n   - Keyman help (documented 9 dead keys in Russian Mnemonic)\n   \n   The cross-verification phase was essentially complete. The next action was to write the corrected, cross-verified guide to the local file.\n\n9. Optional Next Step:\n   **Rewrite `F:\\Russian\\美式键盘输入俄语指南.md`** with cross-verified content limited strictly to Windows official methods. The user's most recent message was: \"我只用windows官方美式国际键盘 交叉验证写入\" — meaning only Windows official US International keyboard methods, cross-verified, written to file. Key changes needed:\n   - Remove AutoHotkey script section\n   - Remove third-party software section  \n   - Replace community phonetic layout with the official Windows Russian Mnemonic (kbdrum.dll) layout\n   - Keep verified standard Russian layout and Alt codes\n   - Add installation steps specifically for adding Russian Mnemonic via Windows Settings\n   - Document dead key combinations for the Mnemonic layout\n\nIf you need specific details from before compaction (like exact code snippets, error messages, or content you generated), read the full transcript at: C:\\Users\\admin.DESKTOP-R20EBH6\\.claude\\projects\\F--Russian\\6c3284d4-a8d6-4892-a099-a4b5ba872408.jsonl\nContinue the conversation from where it left off without asking the user any further questions. Resume directly — do not acknowledge the summary, do not recap what was happening, do not preface with \"I'll continue\" or similar. Pick up the last task as if the break never happened.",
+          "expectedOutput": "现在我有了来自 kbdlayout.info 完整的、经过交叉验证的数据。让我来写更正后的指南。",
+          "category": "coding",
+          "evaluator": {
+            "type": "contains",
+            "threshold": 0.3,
+            "caseInsensitive": true
+          }
+        },
+        {
+          "id": "cc-2b0c6a6d",
+          "name": "CRITICAL: Respond with TEXT ONLY. Do NOT call any tools. -...",
+          "input": "CRITICAL: Respond with TEXT ONLY. Do NOT call any tools.\n\n- Do NOT use Read, Bash, Grep, Glob, Edit, Write, or ANY other tool.\n- You already have all the context you need in the conversation above.\n- Tool calls will be REJECTED and will waste your only turn — you will fail the task.\n- Your entire response must be plain text: an <analysis> block followed by a <summary> block.\n\nYour task is to create a detailed summary of the conversation so far, paying close attention to the user's explicit requests and your previous actions.\nThis summary should be thorough in capturing technical details, code patterns, and architectural decisions that would be essential for continuing development work without losing context.\n\nBefore providing your final summary, wrap your analysis in <analysis> tags to organize your thoughts and ensure you've covered all necessary points. In your analysis process:\n\n1. Chronologically analyze each message and section of the conversation. For each section thoroughly identify:\n   - The user's explicit requests and intents\n   - Your approach to addressing the user's requests\n   - Key decisions, technical concepts and code patterns\n   - Specific details like:\n     - file names\n     - full code snippets\n     - function signatures\n     - file edits\n   - Errors that you ran into and how you fixed them\n   - Pay special attention to specific user feedback that you received, especially if the user told you to do something differently.\n2. Double-check for technical accuracy and completeness, addressing each required element thoroughly.\n\nYour summary should include the following sections:\n\n1. Primary Request and Intent: Capture all of the user's explicit requests and intents in detail\n2. Key Technical Concepts: List all important technical concepts, technologies, and frameworks discussed.\n3. Files and Code Sections: Enumerate specific files and code sections examined, modified, or created. Pay special attention to the most recent messages and include full code snippets where applicable and include a summary of why this file read or edit is important.\n4. Errors and fixes: List all errors that you ran into, and how you fixed them. Pay special attention to specific user feedback that you received, especially if the user told you to do something differently.\n5. Problem Solving: Document problems solved and any ongoing troubleshooting efforts.\n6. All user messages: List ALL user messages that are not tool results. These are critical for understanding the users' feedback and changing intent.\n7. Pending Tasks: Outline any pending tasks that you have explicitly been asked to work on.\n8. Current Work: Describe in detail precisely what was being worked on immediately before this summary request, paying special attention to the most recent messages from both user and assistant. Include file names and code snippets where applicable.\n9. Optional Next Step: List the next step that you will take that is related to the most recent work you were doing. IMPORTANT: ensure that this step is DIRECTLY in line with the user's most recent explicit requests, and the task you were working on immediately before this summary request. If your last task was concluded, then only list next steps if they are explicitly in line with the users request. Do not start on tangential requests or really old requests that were already completed without confirming with the user first.\n                       If there is a next step, include direct quotes from the most recent conversation showing exactly what task you were working on and where you left off. This should be verbatim to ensure there's no drift in task interpretation.\n\nHere's an example of how your output should be structured:\n\n<example>\n<analysis>\n[Your thought process, ensuring all points are covered thoroughly and accurately]\n</analysis>\n\n<summary>\n1. Primary Request and Intent:\n   [Detailed description]\n\n2. Key Technical Concepts:\n   - [Concept 1]\n   - [Concept 2]\n   - [...]\n\n3. Files and Code Sections:\n   - [File Name 1]\n      - [Summary of why this file is important]\n      - [Summary of the changes made to this file, if any]\n      - [Important Code Snippet]\n   - [File Name 2]\n      - [Important Code Snippet]\n   - [...]\n\n4. Errors and fixes:\n    - [Detailed description of error 1]:\n      - [How you fixed the error]\n      - [User feedback on the error if any]\n    - [...]\n\n5. Problem Solving:\n   [Description of solved problems and ongoing troubleshooting]\n\n6. All user messages: \n    - [Detailed non tool use user message]\n    - [...]\n\n7. Pending Tasks:\n   - [Task 1]\n   - [Task 2]\n   - [...]\n\n8. Current Work:\n   [Precise description of current work]\n\n9. Optional Next Step:\n   [Optional Next step to take]\n\n</summary>\n</example>\n\nPlease provide your summary based on the conversation so far, following this structure and ensuring precision and thoroughness in your response. \n\nThere may be additional summarization instructions provided in the included context. If so, remember to follow these instructions when creating the above summary. Examples of instructions include:\n<example>\n## Compact Instructions\nWhen summarizing the conversation focus on typescript code changes and also remember the mistakes you made and how you fixed them.\n</example>\n\n<example>\n# Summary instructions\nWhen you are using compact - please focus on test output and code changes. Include file reads verbatim.\n</example>\n\n\nREMINDER: Do NOT call any tools. Respond with plain text only — an <analysis> block followed by a <summary> block. Tool calls will be rejected and you will fail the task.",
+          "expectedOutput": "API Error: The model has reached its context window limit.",
+          "category": "coding",
+          "evaluator": {
+            "type": "contains",
+            "threshold": 0.3,
+            "caseInsensitive": true
+          }
+        },
+        {
+          "id": "cc-8f03dddc",
+          "name": "Edit F:\\TeXada\\src\\core\\PlatformAdapter.cpp to add thread...",
+          "input": "Edit F:\\TeXada\\src\\core\\PlatformAdapter.cpp to add thread safety using shared_mutex. The header already has `mutable std::shared_mutex mutex_;` added as a private member. Also fix enum validation.\n\nAdd locks to these PUBLIC methods:\n- `Initialize()` - `std::unique_lock<std::shared_mutex> lock(mutex_);` at start\n- `Shutdown()` - `std::unique_lock<std::shared_mutex> lock(mutex_);` at start\n- `AddProfile()` - `std::unique_lock<std::shared_mutex> lock(mutex_);` at start\n- `RemoveProfile()` - `std::unique_lock<std::shared_mutex> lock(mutex_);` at start\n\nFor `ParseJsonProfile()` (private), fix the unsafe enum casts at lines 352-356. Replace:\n```cpp\nif (entry.contains(\"platform\")) {\n    profile.platform = static_cast<PlatformType>(entry[\"platform\"].get<int>());\n}\nif (entry.contains(\"preferred_format\")) {\n    profile.preferred_format = static_cast<OutputFormat>(entry[\"preferred_format\"].get<int>());\n}\n```\nWith validated casts:\n```cpp\nif (entry.contains(\"platform\")) {\n    int val = entry[\"platform\"].get<int>();\n    if (val >= 0 && val <= static_cast<int>(PlatformType::UNKNOWN)) {\n        profile.platform = static_cast<PlatformType>(val);\n    }\n}\nif (entry.contains(\"preferred_format\")) {\n    int val = entry[\"preferred_format\"].get<int>();\n    if (val >= 0 && val <= static_cast<int>(OutputFormat::IMAGE)) {\n        profile.preferred_format = static_cast<OutputFormat>(val);\n    }\n}\n```\n\nDo NOT add locks to static methods like GetProfile, DetectCurrentApp, GetForegroundProcessName etc. since they don't access instance state (they either use local variables or call Instance().profiles_ through the singleton).\n\nDo NOT add locks to private methods called from within locked methods (LoadBuiltInProfiles, GetDefaultConfigPath, ParseJsonProfile, CreateProfileFromProcess, LoadProfiles, SaveProfiles) - they are called from locked public methods.\n\nRead the file first, then apply edits.",
+          "expectedOutput": "Let me start by reading the file to understand its current state.",
+          "category": "coding",
+          "evaluator": {
+            "type": "contains",
+            "threshold": 0.3,
+            "caseInsensitive": true
+          }
+        },
+        {
+          "id": "cc-9585e3ae",
+          "name": "A session-scoped Stop hook is now active with condition:...",
+          "input": "A session-scoped Stop hook is now active with condition: \"思考如何实现notion的块结构页面转换等 完善数据结构和用户体验 除了ai功能 完全复刻notion\". Briefly acknowledge the goal, then immediately start (or continue) working toward it — treat the condition itself as your directive and do not pause to ask the user what to do. The hook will block stopping until the condition holds. It auto-clears once the condition is met — do not tell the user to run `/goal clear` after success; that's only for clearing a goal early.",
+          "expectedOutput": "让我先彻底了解一下当前的代码库，以理解已实现了什么和还缺少什么。",
+          "category": "coding",
+          "evaluator": {
+            "type": "contains",
+            "threshold": 0.3,
+            "caseInsensitive": true
+          }
+        },
+        {
+          "id": "cc-f2a9aab3",
+          "name": "目前各单位转化仍有问题 深度思考并调研后实现",
+          "input": "目前各单位转化仍有问题 深度思考并调研后实现",
+          "expectedOutput": "现在让我详细阅读关键文件，以设计实施计划。",
+          "category": "coding",
+          "evaluator": {
+            "type": "contains",
+            "threshold": 0.3,
+            "caseInsensitive": true
+          }
+        },
+        {
+          "id": "cc-bd170f23",
+          "name": "Stop hook feedback: [继续debug]: The user's condition...",
+          "input": "Stop hook feedback:\n[继续debug]: The user's condition '继续debug' (continue debugging) is an open-ended instruction to keep finding and fixing bugs. While the agent completed Task #43 and applied multiple fixes, a debug session is inherently ongoing — there's always more to find. The agent stopped after marking the task complete with a summary, but the user hasn't indicated they're satisfied. The agent could continue scanning for more issues (e.g., the `as any` type safety issues in Editor.tsx lines 230 and 514 that were identified but not fixed, or the overlapping save race condition mentioned in the plan). However, the agent did substantial work — fixing a critical stale-page bug, multiple medium bugs, and several low-priority issues — and produced a clean TypeScript build (`npx tsc --noEmit` passed). The natural stopping point of a bug sweep has been reached with a comprehensive summary.",
+          "expectedOutput": "继续扫描更多问题。让我看看 `as any` 类型安全问题以及 `Editor` 中重叠的保存竞争条件。",
+          "category": "coding",
+          "evaluator": {
+            "type": "contains",
+            "threshold": 0.3,
+            "caseInsensitive": true
+          }
+        },
+        {
+          "id": "cc-1a98804b",
+          "name": "精细化数据库字段 如日期等 以及上传图片 文件等 模仿notion",
+          "input": "精细化数据库字段 如日期等 以及上传图片 文件等 模仿notion",
+          "expectedOutput": "发现得很棒。在制定计划之前，让我明确一下范围——这是一组非常大的功能。",
+          "category": "coding",
+          "evaluator": {
+            "type": "contains",
+            "threshold": 0.3,
+            "caseInsensitive": true
+          }
+        },
+        {
+          "id": "cc-92037991",
+          "name": "Fix the TeXada test infrastructure at F:\\TeXada\\tests. Do...",
+          "input": "Fix the TeXada test infrastructure at F:\\TeXada\\tests. Do the following:\n\n1. Read F:\\TeXada\\tests\\CMakeLists.txt and add ALL 5 excluded test files to the TEST_SOURCES list:\n   - test_tex_parser.cpp\n   - test_fuzzy_matcher.cpp\n   - test_symbol_database.cpp\n   - test_math_renderer.cpp\n   - test_string_utils.cpp\n\n2. Create a new test file F:\\TeXada\\tests\\test_format_converter.cpp with tests for:\n   - EscapeLatex: test that `\\{` produces `\\\\{`, `$` produces `\\\\$`, test that backslash is replaced with `\\\\textbackslash{}` correctly without double-escaping the braces\n   - EscapeMathML: test `&` -> `&amp;`, `<` -> `&lt;`, `>` -> `&gt;`\n   - EscapeOMML: test XML special chars are escaped (`<`, `>`, `&`, `\"`, `'`)\n   - ValidateLatex: test balanced braces pass, unbalanced fail\n   - EscapeHTML: same as EscapeMathML\n\nUse GoogleTest (gtest) framework. Include proper headers:\n```cpp\n#include <gtest/gtest.h>\n#include \"../src/core/FormatConverter.h\"\n#include \"../src/core/MathNode.h\"\n```\n\n3. Add test_format_converter.cpp to the TEST_SOURCES list in CMakeLists.txt.\n\nMake sure to read each file before editing it.",
+          "expectedOutput": "I'll start by reading the existing files to understand the codebase structure.",
+          "category": "coding",
+          "evaluator": {
+            "type": "contains",
+            "threshold": 0.3,
+            "caseInsensitive": true
+          }
+        },
+        {
+          "id": "cc-c524aafa",
+          "name": "Explore the AgentBench project at...",
+          "input": "Explore the AgentBench project at C:\\Users\\admin.DESKTOP-R20EBH6\\Desktop\\program\\1\\agentbench to understand:\n\n1. How the AI API is currently used - read src/app/api/analyze/route.ts fully\n2. What environment variables are referenced (search for process.env across all files)\n3. What components exist in src/components/ (list all files)\n4. What the sidebar looks like and how navigation works (src/components/Sidebar.tsx)\n5. What the current layout structure is (src/app/layout.tsx)\n6. Check if there's any existing settings or config infrastructure\n\nBe thorough - read each file completely.",
+          "expectedOutput": "I'll systematically explore the AgentBench project to understand its structure and usage patterns. Let me start with multiple parallel searches.",
+          "category": "coding",
+          "evaluator": {
+            "type": "contains",
+            "threshold": 0.3,
+            "caseInsensitive": true
+          }
+        },
+        {
+          "id": "cc-922e89d2",
+          "name": "请探索 C:\\Users\\admin.DESKTOP-R20EBH6\\Desktop\\Kz...",
+          "input": "请探索 C:\\Users\\admin.DESKTOP-R20EBH6\\Desktop\\Kz 这个项目的结构。我需要了解：\n\n1. 项目的整体目录结构\n2. 主要的代码文件和配置文件\n3. 项目使用的技术栈\n4. 项目的用途和功能\n\n请提供一个全面的项目概览。",
+          "expectedOutput": "I'll explore the project structure to provide you with a comprehensive overview. Let me start by examining the directory structure.",
+          "category": "coding",
+          "evaluator": {
+            "type": "contains",
+            "threshold": 0.3,
+            "caseInsensitive": true
+          }
+        },
+        {
+          "id": "cc-a9253a56",
+          "name": "Review the AnyScan Flutter codebase for robustness issues....",
+          "input": "Review the AnyScan Flutter codebase for robustness issues.\n\n**Project location:** E:\\desktop in E\\AnyScan\\any_scan\n\n**Check these areas:**\n\n1. **Error Handling**: Are try-catch blocks properly placed? Are errors gracefully handled?\n2. **Null Safety**: Are nullable types properly handled?\n3. **Edge Cases**: What happens with empty inputs, zero images, very large images?\n4. **Memory Management**: Are images properly disposed? Are large files handled?\n5. **Resource Cleanup**: Are cameras, files, streams properly closed?\n6. **State Management**: Are Riverpod providers handling error states?\n7. **Platform Issues**: Are Android/iOS permissions properly handled?\n\n**Focus on these directories:**\n- lib/features/scan/ - Edge detection and perspective transform\n- lib/features/editor/ - Filters and image processing\n- lib/features/documents/ - Document management\n- lib/features/export/ - PDF generation\n- lib/features/signature/ - Signature capture\n\n**Output format:**\nFor each issue found, provide:\n- File path and line number\n- Severity (Critical/Medium/Low)\n- Description of the issue\n- Suggested fix\n\nStart by exploring the main feature files, then analyze them for robustness issues.",
+          "expectedOutput": "Let me read the key feature files to analyze robustness issues:",
+          "category": "coding",
+          "evaluator": {
+            "type": "contains",
+            "threshold": 0.3,
+            "caseInsensitive": true
+          }
+        },
+        {
+          "id": "cc-4f04916c",
+          "name": "Search E:\\LiFEBOOK\\src for these UI/interaction bug...",
+          "input": "Search E:\\LiFEBOOK\\src for these UI/interaction bug patterns:\n\n1. Check if the InlineDatabaseBlock extension (src/components/editor/extensions/InlineDatabaseBlock.tsx) properly creates, saves, and loads inline databases. Look for any missing error handling or stale state.\n\n2. Check the TemplatePicker (src/components/common/TemplatePicker.tsx) — does it properly create blocks when applying templates? Are there any issues with the block creation loop?\n\n3. Check the EditorBubbleMenu (src/components/editor/EditorBubbleMenu.tsx) — verify it properly handles text selection and formatting commands. Look for stale state issues.\n\n4. Check src/components/editor/extensions/ToggleBlock.tsx — does the toggle properly save/load its open/closed state? Look for any issues with content persistence.\n\n5. Check the PageHeader component — verify icon picker and cover color selection work correctly. Look for any state that doesn't persist.\n\nReport only real bugs with file:line and description.",
+          "expectedOutput": "I'll search for all the specified files and analyze them for UI/interaction bug patterns. Let me start by locating and reading all the relevant files.",
+          "category": "coding",
+          "evaluator": {
+            "type": "contains",
+            "threshold": 0.3,
+            "caseInsensitive": true
+          }
+        },
+        {
+          "id": "cc-d32bba6e",
+          "name": "Explore the ~/projects/audacity codebase structure. I...",
+          "input": "Explore the ~/projects/audacity codebase structure. I need to understand:\n1. Main directory structure\n2. Core source code organization\n3. Key components: audio engine, effects processing, UI framework\n4. Build system used\n5. Main entry points\n6. Key data structures for tracks, waveforms, effects\n\nFocus on understanding the architecture at a high level. Return a structured summary.",
+          "expectedOutput": "I can see the codebase uses CMake as the primary build system. Let me explore the main directories further to understand the architecture.",
+          "category": "coding",
+          "evaluator": {
+            "type": "contains",
+            "threshold": 0.3,
+            "caseInsensitive": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "cc-switch-bugfix",
+      "name": "CC Switch Bug 修复回归",
+      "description": "Bug 修复相关编程任务，共 8 个用例",
+      "agentType": "代码审查",
+      "cases": [
+        {
+          "id": "cc-1061d7c2",
+          "name": "Do an exhaustive final bug sweep of E:\\LiFEBOOK. Check ALL...",
+          "input": "Do an exhaustive final bug sweep of E:\\LiFEBOOK. Check ALL files that haven't been reviewed in the last 3 rounds, and re-check recently modified code for correctness.\n\nFocus areas:\n1. src/components/editor/PageHeader.tsx - any bugs?\n2. src/components/editor/SlashMenu.tsx - functional bugs only\n3. src/components/ai/AIPanel.tsx - re-check the full file for any issues\n4. src/components/sidebar/Breadcrumb.tsx - any bugs?\n5. src/components/common/Toaster.tsx - any bugs?\n6. src/hooks/useResizable.ts - any bugs?\n7. src/lib/utils.ts - any bugs?\n8. vite.config.ts - the empty vendor-react chunk issue, any real problems?\n9. electron/main.ts - re-check the FULL file for any remaining issues in old AND new code\n10. src/stores/toasts.ts - any bugs?\n11. Check ALL test files for correctness - do they actually test the right behavior?\n12. Check src/types/index.ts - any type definitions that don't match the Prisma schema or actual usage?\n\nAlso check for:\n- Any CSS class references that don't exist (Tailwind misconfig)\n- Any imports that reference non-existent exports\n- Any `as any` casts that hide real type errors\n- Missing cleanup in useEffect returns\n- Event listeners that aren't cleaned up\n- Memory leaks (missing AbortController cleanup, etc.)\n\nReport ONLY concrete runtime bugs with file:line. Be extremely brief - one line per bug max.",
+          "expectedOutput": "I'll perform an exhaustive bug sweep of the specified files. Let me start by reading all the files in parallel.",
+          "category": "coding",
+          "evaluator": {
+            "type": "contains",
+            "threshold": 0.3,
+            "caseInsensitive": true
+          }
+        },
+        {
+          "id": "cc-bd2749c1",
+          "name": "This session is being continued from a previous...",
+          "input": "This session is being continued from a previous conversation that ran out of context. The summary below covers the earlier portion of the conversation.\n\nSummary:\n1. Primary Request and Intent:\n   - The user wants a complete guide for typing Russian (Cyrillic) using a **standard US keyboard** on **Windows 11**.\n   - Critical constraint stated in third message: \"我只用windows官方美式国际键盘\" — they **only use Windows official US International keyboard** and Windows built-in methods. No third-party tools, no AutoHotkey, no custom layouts.\n   - The user wants the guide **cross-verified** against official sources and **written to a local markdown file** at `F:\\Russian\\`.\n\n2. Key Technical Concepts:\n   - **Standard Russian layout (kbdru.dll)**: The default Russian keyboard, positions don't correspond to QWERTY sounds (e.g., Q→Й, W→Ц, E→У, R→К)\n   - **Russian Mnemonic layout (kbdrum.dll, KLID: 00020419)**: Official Windows built-in phonetic layout available since Windows 8. Maps keys by sound (e.g., Q→Й, R→Р, T→Т, S→С, D→Д). Uses **9 dead keys** for letters without direct phonetic matches (ts→ц, sh→ш, ch→ч, zh→ж, etc.)\n   - **Windows Alt codes**: Numpad-based input for Cyrillic characters (e.g., Alt+1040=А, Alt+1071=Я)\n   - **Three official Windows Russian layouts**: Standard (kbdru.dll), Typewriter (kbdru1.dll), Mnemonic (kbdrum.dll)\n   - Switching: `Win+Space` or `Alt+Shift`\n\n3. Files and Code Sections:\n   - **`F:\\Russian\\美式键盘输入俄语指南.md`** — Created in the first write pass. This is the main output file. Contains the full guide with 4 methods, key mapping tables, AutoHotkey script, Alt codes reference, and practice phrases.\n     - **Problem**: This version recommends third-party tools (AutoHotkey, community phonetic layouts, MKLC) which contradicts the user's \"only Windows official\" constraint.\n     - **Problem**: The phonetic mapping table may not match the actual Windows Russian Mnemonic (kbdrum.dll) layout exactly. For example, original guide maps W→В but actual Windows Mnemonic maps W→Ц.\n     - **Needs rewrite** with cross-verified data from official sources.\n\n4. Errors and fixes:\n   - **Web search rate limiting**: Multiple search queries hit HTTP 429 errors. Worked around by retrying and using alternative queries.\n   - **Microsoft Learn kbdrum page**: The interactive keyboard viewer didn't render as text in web reader — it's an interactive SVG. Could not extract exact key mappings from that page directly.\n   - **Content accuracy issue**: The first version of the guide included non-Windows-official methods (AutoHotkey scripts, third-party phonetic layouts, MKLC). User explicitly corrected this in third message: \"我只用windows官方美式国际键盘\" — only use Windows official methods.\n   - **Phonetic mapping accuracy**: The phonetic layout in the first version was a generic/community phonetic mapping, NOT the official Windows Russian Mnemonic (kbdrum.dll) mapping. These differ in some key assignments.\n\n5. Problem Solving:\n   - Successfully verified the **standard Russian layout (kbdru.dll)** key mapping from winrus.com — confirmed correct in the original guide.\n   - Successfully retrieved all **Alt codes** for 33 Russian letters from altcodeunicode.com (А=Alt+1040 through Я=Alt+1071).\n   - Discovered that Windows has an official **Russian Mnemonic** (phonetic) layout (kbdrum.dll) built into Windows since Windows 8 — this is the ideal solution for the user but was NOT mentioned in the original guide.\n   - The Russian Mnemonic layout uses dead keys for complex letters (ц, ш, щ, ч, ж, etc.) which is different from the simple one-to-one mapping in the original guide.\n   - Cross-verification data has been collected but the **rewritten guide has NOT yet been written to disk**.\n\n6. All user messages:\n   - \"给一份美式键盘输入俄罗斯语的完全指南\" (Give me a complete guide for typing Russian with a US keyboard)\n   - \"先写入本地md 但我的键盘是美式键盘 把指南写入本地md\" (Write to local md first, my keyboard is US keyboard, write the guide to local md)\n   - \"我只用windows官方美式国际键盘 交叉验证写入\" (I only use Windows official US International keyboard, cross-verify and write)\n\n7. Pending Tasks:\n   - **Rewrite `F:\\Russian\\美式键盘输入俄语指南.md`** with cross-verified content that ONLY covers Windows official methods:\n     1. Windows built-in standard Russian layout (kbdru.dll) with verified key mapping\n     2. Windows built-in Russian Mnemonic layout (kbdrum.dll) with accurate phonetic mapping and dead key documentation\n     3. Alt code reference table (verified from altcodeunicode.com)\n     4. Remove all third-party recommendations (AutoHotkey, MKLC, community layouts, Punto Switcher, etc.)\n\n8. Current Work:\n   I was in the process of cross-verifying the Windows Russian keyboard layout data from official sources. I had completed gathering verification data from:\n   - altcodeunicode.com (Alt codes — fully retrieved and verified)\n   - winrus.com (confirmed 3 official Russian layouts, standard layout verified)\n   - learn.microsoft.com (confirmed kbdrum.dll exists, KLID 00020419)\n   - kbdlayout.info (confirmed kbdrum.dll metadata, AltGr support)\n   - Keyman help (documented 9 dead keys in Russian Mnemonic)\n   \n   The cross-verification phase was essentially complete. The next action was to write the corrected, cross-verified guide to the local file.\n\n9. Optional Next Step:\n   **Rewrite `F:\\Russian\\美式键盘输入俄语指南.md`** with cross-verified content limited strictly to Windows official methods. The user's most recent message was: \"我只用windows官方美式国际键盘 交叉验证写入\" — meaning only Windows official US International keyboard methods, cross-verified, written to file. Key changes needed:\n   - Remove AutoHotkey script section\n   - Remove third-party software section  \n   - Replace community phonetic layout with the official Windows Russian Mnemonic (kbdrum.dll) layout\n   - Keep verified standard Russian layout and Alt codes\n   - Add installation steps specifically for adding Russian Mnemonic via Windows Settings\n   - Document dead key combinations for the Mnemonic layout\n\nIf you need specific details from before compaction (like exact code snippets, error messages, or content you generated), read the full transcript at: C:\\Users\\admin.DESKTOP-R20EBH6\\.claude\\projects\\F--Russian\\6c3284d4-a8d6-4892-a099-a4b5ba872408.jsonl\nContinue the conversation from where it left off without asking the user any further questions. Resume directly — do not acknowledge the summary, do not recap what was happening, do not preface with \"I'll continue\" or similar. Pick up the last task as if the break never happened.",
+          "expectedOutput": "现在我有了来自 kbdlayout.info 完整的、经过交叉验证的数据。让我来写更正后的指南。",
+          "category": "coding",
+          "evaluator": {
+            "type": "contains",
+            "threshold": 0.3,
+            "caseInsensitive": true
+          }
+        },
+        {
+          "id": "cc-2b0c6a6d",
+          "name": "CRITICAL: Respond with TEXT ONLY. Do NOT call any tools. -...",
+          "input": "CRITICAL: Respond with TEXT ONLY. Do NOT call any tools.\n\n- Do NOT use Read, Bash, Grep, Glob, Edit, Write, or ANY other tool.\n- You already have all the context you need in the conversation above.\n- Tool calls will be REJECTED and will waste your only turn — you will fail the task.\n- Your entire response must be plain text: an <analysis> block followed by a <summary> block.\n\nYour task is to create a detailed summary of the conversation so far, paying close attention to the user's explicit requests and your previous actions.\nThis summary should be thorough in capturing technical details, code patterns, and architectural decisions that would be essential for continuing development work without losing context.\n\nBefore providing your final summary, wrap your analysis in <analysis> tags to organize your thoughts and ensure you've covered all necessary points. In your analysis process:\n\n1. Chronologically analyze each message and section of the conversation. For each section thoroughly identify:\n   - The user's explicit requests and intents\n   - Your approach to addressing the user's requests\n   - Key decisions, technical concepts and code patterns\n   - Specific details like:\n     - file names\n     - full code snippets\n     - function signatures\n     - file edits\n   - Errors that you ran into and how you fixed them\n   - Pay special attention to specific user feedback that you received, especially if the user told you to do something differently.\n2. Double-check for technical accuracy and completeness, addressing each required element thoroughly.\n\nYour summary should include the following sections:\n\n1. Primary Request and Intent: Capture all of the user's explicit requests and intents in detail\n2. Key Technical Concepts: List all important technical concepts, technologies, and frameworks discussed.\n3. Files and Code Sections: Enumerate specific files and code sections examined, modified, or created. Pay special attention to the most recent messages and include full code snippets where applicable and include a summary of why this file read or edit is important.\n4. Errors and fixes: List all errors that you ran into, and how you fixed them. Pay special attention to specific user feedback that you received, especially if the user told you to do something differently.\n5. Problem Solving: Document problems solved and any ongoing troubleshooting efforts.\n6. All user messages: List ALL user messages that are not tool results. These are critical for understanding the users' feedback and changing intent.\n7. Pending Tasks: Outline any pending tasks that you have explicitly been asked to work on.\n8. Current Work: Describe in detail precisely what was being worked on immediately before this summary request, paying special attention to the most recent messages from both user and assistant. Include file names and code snippets where applicable.\n9. Optional Next Step: List the next step that you will take that is related to the most recent work you were doing. IMPORTANT: ensure that this step is DIRECTLY in line with the user's most recent explicit requests, and the task you were working on immediately before this summary request. If your last task was concluded, then only list next steps if they are explicitly in line with the users request. Do not start on tangential requests or really old requests that were already completed without confirming with the user first.\n                       If there is a next step, include direct quotes from the most recent conversation showing exactly what task you were working on and where you left off. This should be verbatim to ensure there's no drift in task interpretation.\n\nHere's an example of how your output should be structured:\n\n<example>\n<analysis>\n[Your thought process, ensuring all points are covered thoroughly and accurately]\n</analysis>\n\n<summary>\n1. Primary Request and Intent:\n   [Detailed description]\n\n2. Key Technical Concepts:\n   - [Concept 1]\n   - [Concept 2]\n   - [...]\n\n3. Files and Code Sections:\n   - [File Name 1]\n      - [Summary of why this file is important]\n      - [Summary of the changes made to this file, if any]\n      - [Important Code Snippet]\n   - [File Name 2]\n      - [Important Code Snippet]\n   - [...]\n\n4. Errors and fixes:\n    - [Detailed description of error 1]:\n      - [How you fixed the error]\n      - [User feedback on the error if any]\n    - [...]\n\n5. Problem Solving:\n   [Description of solved problems and ongoing troubleshooting]\n\n6. All user messages: \n    - [Detailed non tool use user message]\n    - [...]\n\n7. Pending Tasks:\n   - [Task 1]\n   - [Task 2]\n   - [...]\n\n8. Current Work:\n   [Precise description of current work]\n\n9. Optional Next Step:\n   [Optional Next step to take]\n\n</summary>\n</example>\n\nPlease provide your summary based on the conversation so far, following this structure and ensuring precision and thoroughness in your response. \n\nThere may be additional summarization instructions provided in the included context. If so, remember to follow these instructions when creating the above summary. Examples of instructions include:\n<example>\n## Compact Instructions\nWhen summarizing the conversation focus on typescript code changes and also remember the mistakes you made and how you fixed them.\n</example>\n\n<example>\n# Summary instructions\nWhen you are using compact - please focus on test output and code changes. Include file reads verbatim.\n</example>\n\n\nREMINDER: Do NOT call any tools. Respond with plain text only — an <analysis> block followed by a <summary> block. Tool calls will be rejected and you will fail the task.",
+          "expectedOutput": "API Error: The model has reached its context window limit.",
+          "category": "coding",
+          "evaluator": {
+            "type": "contains",
+            "threshold": 0.3,
+            "caseInsensitive": true
+          }
+        },
+        {
+          "id": "cc-8f03dddc",
+          "name": "Edit F:\\TeXada\\src\\core\\PlatformAdapter.cpp to add thread...",
+          "input": "Edit F:\\TeXada\\src\\core\\PlatformAdapter.cpp to add thread safety using shared_mutex. The header already has `mutable std::shared_mutex mutex_;` added as a private member. Also fix enum validation.\n\nAdd locks to these PUBLIC methods:\n- `Initialize()` - `std::unique_lock<std::shared_mutex> lock(mutex_);` at start\n- `Shutdown()` - `std::unique_lock<std::shared_mutex> lock(mutex_);` at start\n- `AddProfile()` - `std::unique_lock<std::shared_mutex> lock(mutex_);` at start\n- `RemoveProfile()` - `std::unique_lock<std::shared_mutex> lock(mutex_);` at start\n\nFor `ParseJsonProfile()` (private), fix the unsafe enum casts at lines 352-356. Replace:\n```cpp\nif (entry.contains(\"platform\")) {\n    profile.platform = static_cast<PlatformType>(entry[\"platform\"].get<int>());\n}\nif (entry.contains(\"preferred_format\")) {\n    profile.preferred_format = static_cast<OutputFormat>(entry[\"preferred_format\"].get<int>());\n}\n```\nWith validated casts:\n```cpp\nif (entry.contains(\"platform\")) {\n    int val = entry[\"platform\"].get<int>();\n    if (val >= 0 && val <= static_cast<int>(PlatformType::UNKNOWN)) {\n        profile.platform = static_cast<PlatformType>(val);\n    }\n}\nif (entry.contains(\"preferred_format\")) {\n    int val = entry[\"preferred_format\"].get<int>();\n    if (val >= 0 && val <= static_cast<int>(OutputFormat::IMAGE)) {\n        profile.preferred_format = static_cast<OutputFormat>(val);\n    }\n}\n```\n\nDo NOT add locks to static methods like GetProfile, DetectCurrentApp, GetForegroundProcessName etc. since they don't access instance state (they either use local variables or call Instance().profiles_ through the singleton).\n\nDo NOT add locks to private methods called from within locked methods (LoadBuiltInProfiles, GetDefaultConfigPath, ParseJsonProfile, CreateProfileFromProcess, LoadProfiles, SaveProfiles) - they are called from locked public methods.\n\nRead the file first, then apply edits.",
+          "expectedOutput": "Let me start by reading the file to understand its current state.",
+          "category": "coding",
+          "evaluator": {
+            "type": "contains",
+            "threshold": 0.3,
+            "caseInsensitive": true
+          }
+        },
+        {
+          "id": "cc-bd170f23",
+          "name": "Stop hook feedback: [继续debug]: The user's condition...",
+          "input": "Stop hook feedback:\n[继续debug]: The user's condition '继续debug' (continue debugging) is an open-ended instruction to keep finding and fixing bugs. While the agent completed Task #43 and applied multiple fixes, a debug session is inherently ongoing — there's always more to find. The agent stopped after marking the task complete with a summary, but the user hasn't indicated they're satisfied. The agent could continue scanning for more issues (e.g., the `as any` type safety issues in Editor.tsx lines 230 and 514 that were identified but not fixed, or the overlapping save race condition mentioned in the plan). However, the agent did substantial work — fixing a critical stale-page bug, multiple medium bugs, and several low-priority issues — and produced a clean TypeScript build (`npx tsc --noEmit` passed). The natural stopping point of a bug sweep has been reached with a comprehensive summary.",
+          "expectedOutput": "继续扫描更多问题。让我看看 `as any` 类型安全问题以及 `Editor` 中重叠的保存竞争条件。",
+          "category": "coding",
+          "evaluator": {
+            "type": "contains",
+            "threshold": 0.3,
+            "caseInsensitive": true
+          }
+        },
+        {
+          "id": "cc-92037991",
+          "name": "Fix the TeXada test infrastructure at F:\\TeXada\\tests. Do...",
+          "input": "Fix the TeXada test infrastructure at F:\\TeXada\\tests. Do the following:\n\n1. Read F:\\TeXada\\tests\\CMakeLists.txt and add ALL 5 excluded test files to the TEST_SOURCES list:\n   - test_tex_parser.cpp\n   - test_fuzzy_matcher.cpp\n   - test_symbol_database.cpp\n   - test_math_renderer.cpp\n   - test_string_utils.cpp\n\n2. Create a new test file F:\\TeXada\\tests\\test_format_converter.cpp with tests for:\n   - EscapeLatex: test that `\\{` produces `\\\\{`, `$` produces `\\\\$`, test that backslash is replaced with `\\\\textbackslash{}` correctly without double-escaping the braces\n   - EscapeMathML: test `&` -> `&amp;`, `<` -> `&lt;`, `>` -> `&gt;`\n   - EscapeOMML: test XML special chars are escaped (`<`, `>`, `&`, `\"`, `'`)\n   - ValidateLatex: test balanced braces pass, unbalanced fail\n   - EscapeHTML: same as EscapeMathML\n\nUse GoogleTest (gtest) framework. Include proper headers:\n```cpp\n#include <gtest/gtest.h>\n#include \"../src/core/FormatConverter.h\"\n#include \"../src/core/MathNode.h\"\n```\n\n3. Add test_format_converter.cpp to the TEST_SOURCES list in CMakeLists.txt.\n\nMake sure to read each file before editing it.",
+          "expectedOutput": "I'll start by reading the existing files to understand the codebase structure.",
+          "category": "coding",
+          "evaluator": {
+            "type": "contains",
+            "threshold": 0.3,
+            "caseInsensitive": true
+          }
+        },
+        {
+          "id": "cc-a9253a56",
+          "name": "Review the AnyScan Flutter codebase for robustness issues....",
+          "input": "Review the AnyScan Flutter codebase for robustness issues.\n\n**Project location:** E:\\desktop in E\\AnyScan\\any_scan\n\n**Check these areas:**\n\n1. **Error Handling**: Are try-catch blocks properly placed? Are errors gracefully handled?\n2. **Null Safety**: Are nullable types properly handled?\n3. **Edge Cases**: What happens with empty inputs, zero images, very large images?\n4. **Memory Management**: Are images properly disposed? Are large files handled?\n5. **Resource Cleanup**: Are cameras, files, streams properly closed?\n6. **State Management**: Are Riverpod providers handling error states?\n7. **Platform Issues**: Are Android/iOS permissions properly handled?\n\n**Focus on these directories:**\n- lib/features/scan/ - Edge detection and perspective transform\n- lib/features/editor/ - Filters and image processing\n- lib/features/documents/ - Document management\n- lib/features/export/ - PDF generation\n- lib/features/signature/ - Signature capture\n\n**Output format:**\nFor each issue found, provide:\n- File path and line number\n- Severity (Critical/Medium/Low)\n- Description of the issue\n- Suggested fix\n\nStart by exploring the main feature files, then analyze them for robustness issues.",
+          "expectedOutput": "Let me read the key feature files to analyze robustness issues:",
+          "category": "coding",
+          "evaluator": {
+            "type": "contains",
+            "threshold": 0.3,
+            "caseInsensitive": true
+          }
+        },
+        {
+          "id": "cc-4f04916c",
+          "name": "Search E:\\LiFEBOOK\\src for these UI/interaction bug...",
+          "input": "Search E:\\LiFEBOOK\\src for these UI/interaction bug patterns:\n\n1. Check if the InlineDatabaseBlock extension (src/components/editor/extensions/InlineDatabaseBlock.tsx) properly creates, saves, and loads inline databases. Look for any missing error handling or stale state.\n\n2. Check the TemplatePicker (src/components/common/TemplatePicker.tsx) — does it properly create blocks when applying templates? Are there any issues with the block creation loop?\n\n3. Check the EditorBubbleMenu (src/components/editor/EditorBubbleMenu.tsx) — verify it properly handles text selection and formatting commands. Look for stale state issues.\n\n4. Check src/components/editor/extensions/ToggleBlock.tsx — does the toggle properly save/load its open/closed state? Look for any issues with content persistence.\n\n5. Check the PageHeader component — verify icon picker and cover color selection work correctly. Look for any state that doesn't persist.\n\nReport only real bugs with file:line and description.",
+          "expectedOutput": "I'll search for all the specified files and analyze them for UI/interaction bug patterns. Let me start by locating and reading all the relevant files.",
+          "category": "coding",
+          "evaluator": {
+            "type": "contains",
+            "threshold": 0.3,
+            "caseInsensitive": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "cc-switch-feature",
+      "name": "CC Switch 功能实现回归",
+      "description": "新功能实现相关编程任务，共 5 个用例",
+      "agentType": "代码审查",
+      "cases": [
+        {
+          "id": "cc-1a977097",
+          "name": "Create first-principles tutorial markdown files for ALL 7...",
+          "input": "Create first-principles tutorial markdown files for ALL 7 subfolders under ~/projects/learning/. Each file named `foldername-basics.md`, placed in its subfolder. Written in Chinese, starting from fundamental concepts, covering all exam points, with section headers, key formulas, and examples. Be concise but comprehensive.\n\nCreate ALL 7 files:\n\n1. ~/projects/learning/01-财务管理基础/01-财务管理基础-basics.md\nTopics: 财务管理概述(目标/利益相关者/金融工具与市场), 财务报表分析(比率分析/杜邦分析/管理用报表), 财务预测(内含增长率/可持续增长率), 价值评估基础(利率/货币时间价值/风险与报酬CAPM/债券股票估值)\n\n2. ~/projects/learning/02-长期投资决策/02-长期投资决策-basics.md\nTopics: 资本成本(债务/普通股/WACC), 投资项目资本预算(NPV/IRR/PI/回收期/现金流量), 期权价值评估(概念/策略/实物期权), 企业价值评估(DCF/相对价值)\n\n3. ~/projects/learning/03-长期筹资决策/03-长期筹资决策-basics.md\nTopics: 资本结构(MM理论/杠杆系数), 长期筹资(债务/普通股/混合筹资/租赁), 股利分配/股票分割与回购\n\n4. ~/projects/learning/04-营运资本管理/04-营运资本管理-basics.md\nTopics: 营运资本管理策略, 现金管理(Baumol/Miller-Orr), 应收账款管理, 存货管理(EOQ), 短期债务管理\n\n5. ~/projects/learning/05-成本管理会计基础/05-成本管理会计基础-basics.md\nTopics: 成本概念与分类, 管理决策与成本管理会计, 环境变化影响(ESG/数字化/全球竞争)\n\n6. ~/projects/learning/06-成本计算/06-成本计算-basics.md\nTopics: 产品成本计算(品种法/分批法/分步法), 标准成本法(制定/差异分析), 作业成本法和生命周期成本法\n\n7. ~/projects/learning/07-管理会计/07-管理会计-basics.md\nTopics: 本量利分析(保本/保利/敏感分析), 短期经营决策(自制外购/特殊订单/约束资源), 全面预算, 责任会计(责任中心/内部转移价格), 业绩评价(EVA/平衡计分卡/KPI)\n\nIMPORTANT: Create ALL 7 files using the Write tool.",
+          "expectedOutput": "API Error: Request rejected (429) · The service may be temporarily overloaded, please try again later",
+          "category": "coding",
+          "evaluator": {
+            "type": "contains",
+            "threshold": 0.3,
+            "caseInsensitive": true
+          }
+        },
+        {
+          "id": "cc-c3eabbc7",
+          "name": "Search the LiFEBOOK codebase for any existing width or...",
+          "input": "Search the LiFEBOOK codebase for any existing width or layout-related patterns:\n\n1. Search for any references to \"fullWidth\", \"full-width\", \"full_width\", \"pageWidth\", \"page-width\", \"contentWidth\", \"content-width\", \"layout\" across all TypeScript/TSX files.\n\n2. Search for \"column\" references in editor extensions and the slash menu — how are columns created via the slash menu? Check `src/components/editor/Editor.tsx` handleSlashSelect for column handling.\n\n3. Look at how Notion implements column layout — it uses a \"column_list\" block type containing \"column\" children. Check if LiFEBOOK has this pattern already and how it renders.\n\n4. Check `src/components/editor/extensions/` — list ALL extension files and identify any that relate to layout (column, width, divider, etc.).\n\n5. Look at the slash menu items in `Editor.tsx` — search for \"column\", \"columns\" in the slash menu section to understand what column-related slash commands exist.\n\n6. Check how images are currently handled width-wise — look at the Image extension configuration and how images render in the editor.\n\nReport all findings with file paths and line numbers.",
+          "expectedOutput": "I'll conduct a comprehensive search across the LiFEBOOK codebase for width/layout-related patterns. Let me run multiple searches in parallel.",
+          "category": "coding",
+          "evaluator": {
+            "type": "contains",
+            "threshold": 0.3,
+            "caseInsensitive": true
+          }
+        },
+        {
+          "id": "cc-60f89034",
+          "name": "Create a README.md in each of the 7 subfolders under...",
+          "input": "Create a README.md in each of the 7 subfolders under E:\\CICPA-Learning\\CICPA-Financial Management\\. Each README.md should contain the corresponding module's exam syllabus content.\n\nRead the file E:\\CICPA-Learning\\CICPA-Financial Management\\考试大纲.md first to get the full content, then extract each section and write it into the matching subfolder's README.md.\n\nThe 7 subfolders are:\n01-财务管理基础, 02-长期投资决策, 03-长期筹资决策, 04-营运资本管理, 05-成本管理会计基础, 06-成本计算, 07-管理会计\n\nFor each README.md:\n- Title: the section name as H1\n- Source line: \"> **来源**：[中国注册会计师协会](https://www.cicpa.org.cn/xxfb/tzgg/202603/W020260304555799366109.pdf)\"\n- Include the full exam content with 能力等级 for that section\n- Use bullet lists or tables with 能力等级 noted inline\n\nWrite ALL 7 files. Do not skip any.",
+          "expectedOutput": "API Error: 429 {\"error\":{\"code\":\"1302\",\"message\":\"Rate limit reached for requests\"},\"request_id\":\"202604201444085a462ab5715c476d\"}",
+          "category": "coding",
+          "evaluator": {
+            "type": "contains",
+            "threshold": 0.3,
+            "caseInsensitive": true
+          }
+        },
+        {
+          "id": "cc-9585e3ae",
+          "name": "A session-scoped Stop hook is now active with condition:...",
+          "input": "A session-scoped Stop hook is now active with condition: \"思考如何实现notion的块结构页面转换等 完善数据结构和用户体验 除了ai功能 完全复刻notion\". Briefly acknowledge the goal, then immediately start (or continue) working toward it — treat the condition itself as your directive and do not pause to ask the user what to do. The hook will block stopping until the condition holds. It auto-clears once the condition is met — do not tell the user to run `/goal clear` after success; that's only for clearing a goal early.",
+          "expectedOutput": "让我先彻底了解一下当前的代码库，以理解已实现了什么和还缺少什么。",
+          "category": "coding",
+          "evaluator": {
+            "type": "contains",
+            "threshold": 0.3,
+            "caseInsensitive": true
+          }
+        },
+        {
+          "id": "cc-f2a9aab3",
+          "name": "目前各单位转化仍有问题 深度思考并调研后实现",
+          "input": "目前各单位转化仍有问题 深度思考并调研后实现",
+          "expectedOutput": "现在让我详细阅读关键文件，以设计实施计划。",
+          "category": "coding",
+          "evaluator": {
+            "type": "contains",
+            "threshold": 0.3,
+            "caseInsensitive": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "cc-switch-other",
+      "name": "CC Switch 其他任务回归",
+      "description": "其他类型编程任务，共 7 个用例",
+      "agentType": "其他",
+      "cases": [
+        {
+          "id": "cc-9abe204d",
+          "name": "Explore the linguistwantstech codebase to understand: 1....",
+          "input": "Explore the linguistwantstech codebase to understand:\n1. The overall project structure\n2. The CLI entry point and how it works\n3. The frontend code (especially any visual display issues)\n4. Any references to \"NUL\", \"qwen\", or similar problematic text\n5. The package.json configuration\n6. Any web/UI components that display the linguist character\n\nProvide a comprehensive summary of:\n- File structure\n- Main entry points\n- Frontend/rendering code\n- Any obvious robustness issues\n- Where the linguist character is defined and displayed",
+          "expectedOutput": "I'll explore the linguistwantstech codebase systematically to understand its structure and identify the issues you mentioned. Let me start by examining the overall project structure.",
+          "category": "coding",
+          "evaluator": {
+            "type": "contains",
+            "threshold": 0.3,
+            "caseInsensitive": true
+          }
+        },
+        {
+          "id": "cc-06cc255c",
+          "name": "根据这个仓库实际情况和这个建议 修改开源协议安排...",
+          "input": "根据这个仓库实际情况和这个建议 修改开源协议安排 我这边**没法直接读取这两个仓库页面内容**，所以不能装作已经看过仓库后下判断。基于你这类学习仓的常见结构，我给你一版**最简洁但尽量全覆盖**的建议：\n\n### 直接建议\n\n**不要整仓单协议。改成文档 / 代码分层许可。**\n\n- **笔记、总结、文档**\n    \n    用 `CC BY-NC-SA 4.0`\n    \n- **脚本、工具代码**\n    \n    用 `MIT`  \n    \n    如果你更在意专利条款，用 `Apache-2.0`\n    \n\n### 为什么这么配\n\n- 学习仓如果全用 `MIT`\n    \n    对文档太宽松，容易被人直接搬运做商业资料包\n    \n- 学习仓如果全用 `GPL`\n    \n    不太适合以笔记、知识整理为主的仓库\n    \n- `CC BY-NC-SA 4.0 + MIT`\n    \n    基本是这类仓最稳的组合：\n    \n    - 允许学习、转载、改写\n    - 限制直接商用倒卖\n    - 代码仍然方便复用\n\n### 你要特别补的一条\n\n**你的协议只覆盖你原创的内容。**\n\n如果仓库里有这些东西：\n\n- 教材原文\n- 网课讲义\n- 真题原文\n- 机构资料\n- 大段法规/标准的非自由转载内容\n- 截图或受限材料\n\n那**不能因为你挂了开源协议就自动合法**。  \n\n做法是：\n\n- 保留你自己的总结和重写内容\n- 删除或弱化第三方原文搬运\n- 在 README 里明确：\n    - 第三方内容权利归原权利人\n    - 不在本仓库授权范围内\n    - 如有侵权可联系删除\n\n### 最小落地方案\n\n仓库里这样放：\n\n- `LICENSE-CODE`\n- `LICENSE-DOCS`\n- `README.md` 里加一段许可说明\n- 最好再加一个 `NOTICE` 或版权说明\n\n### README 里建议写清楚 4 件事\n\n1. `docs/ notes/ summary/` 等目录适用 `CC BY-NC-SA 4.0`\n2. `scripts/ tools/ code/` 等目录适用 `MIT`\n3. 第三方材料不在你的授权范围内\n4. 商业使用、转载、改编的边界\n\n### 如果你只想让我给一句最终拍板\n\n**推荐你把这两个仓库都改成：文档 `CC BY-NC-SA 4.0`，代码 `MIT`，并在 README 里明确第三方资料不授权。**\n\n### 哪些情况要再收紧\n\n如果你特别担心：\n\n- 被搬运\n- 被洗稿\n- 被直接做付费资料\n\n可以把文档改成：\n\n- `CC BY-NC-ND 4.0`\n\n但这会明显降低协作性。  \n\n通常我还是更建议 `CC BY-NC-SA 4.0`。\n\n### 最后一句\n\n如果这两个仓库里**第三方考试材料占比很高**，那重点不是换哪个协议，而是**先清内容，再挂协议**。否则协议本身救不了版权风险。",
+          "expectedOutput": "让我先查看一下这个仓库，以便了解它的结构。",
+          "category": "coding",
+          "evaluator": {
+            "type": "contains",
+            "threshold": 0.3,
+            "caseInsensitive": true
+          }
+        },
+        {
+          "id": "cc-2a8e43cc",
+          "name": "探索这个项目的代码库结构，了解： 1. 这是什么类型的应用 2. 主要的源代码文件和目录结构 3. 项目的功能模块...",
+          "input": "探索这个项目的代码库结构，了解：\n1. 这是什么类型的应用\n2. 主要的源代码文件和目录结构\n3. 项目的功能模块\n4. 是否有配置文件、文档等\n5. 使用的技术栈",
+          "expectedOutput": "我将探索这个项目的代码库结构，了解其组成和技术栈。",
+          "category": "coding",
+          "evaluator": {
+            "type": "contains",
+            "threshold": 0.3,
+            "caseInsensitive": true
+          }
+        },
+        {
+          "id": "cc-1a98804b",
+          "name": "精细化数据库字段 如日期等 以及上传图片 文件等 模仿notion",
+          "input": "精细化数据库字段 如日期等 以及上传图片 文件等 模仿notion",
+          "expectedOutput": "发现得很棒。在制定计划之前，让我明确一下范围——这是一组非常大的功能。",
+          "category": "coding",
+          "evaluator": {
+            "type": "contains",
+            "threshold": 0.3,
+            "caseInsensitive": true
+          }
+        },
+        {
+          "id": "cc-c524aafa",
+          "name": "Explore the AgentBench project at...",
+          "input": "Explore the AgentBench project at C:\\Users\\admin.DESKTOP-R20EBH6\\Desktop\\program\\1\\agentbench to understand:\n\n1. How the AI API is currently used - read src/app/api/analyze/route.ts fully\n2. What environment variables are referenced (search for process.env across all files)\n3. What components exist in src/components/ (list all files)\n4. What the sidebar looks like and how navigation works (src/components/Sidebar.tsx)\n5. What the current layout structure is (src/app/layout.tsx)\n6. Check if there's any existing settings or config infrastructure\n\nBe thorough - read each file completely.",
+          "expectedOutput": "I'll systematically explore the AgentBench project to understand its structure and usage patterns. Let me start with multiple parallel searches.",
+          "category": "coding",
+          "evaluator": {
+            "type": "contains",
+            "threshold": 0.3,
+            "caseInsensitive": true
+          }
+        },
+        {
+          "id": "cc-922e89d2",
+          "name": "请探索 C:\\Users\\admin.DESKTOP-R20EBH6\\Desktop\\Kz...",
+          "input": "请探索 C:\\Users\\admin.DESKTOP-R20EBH6\\Desktop\\Kz 这个项目的结构。我需要了解：\n\n1. 项目的整体目录结构\n2. 主要的代码文件和配置文件\n3. 项目使用的技术栈\n4. 项目的用途和功能\n\n请提供一个全面的项目概览。",
+          "expectedOutput": "I'll explore the project structure to provide you with a comprehensive overview. Let me start by examining the directory structure.",
+          "category": "coding",
+          "evaluator": {
+            "type": "contains",
+            "threshold": 0.3,
+            "caseInsensitive": true
+          }
+        },
+        {
+          "id": "cc-d32bba6e",
+          "name": "Explore the ~/projects/audacity codebase structure. I...",
+          "input": "Explore the ~/projects/audacity codebase structure. I need to understand:\n1. Main directory structure\n2. Core source code organization\n3. Key components: audio engine, effects processing, UI framework\n4. Build system used\n5. Main entry points\n6. Key data structures for tracks, waveforms, effects\n\nFocus on understanding the architecture at a high level. Return a structured summary.",
+          "expectedOutput": "I can see the codebase uses CMake as the primary build system. Let me explore the main directories further to understand the architecture.",
+          "category": "coding",
+          "evaluator": {
+            "type": "contains",
+            "threshold": 0.3,
+            "caseInsensitive": true
+          }
+        }
+      ]
+    }
+  ]
+}
