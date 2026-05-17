@@ -50,6 +50,66 @@ const PROVIDERS: {
     ],
   },
   {
+    value: "google",
+    label: "Google Gemini",
+    desc: "Gemini 2.5 Pro/Flash (AI Studio)",
+    models: [
+      "gemini-2.5-pro",
+      "gemini-2.5-flash",
+      "gemini-2.5-flash-lite",
+    ],
+  },
+  {
+    value: "zhipu",
+    label: "智谱 Zhipu",
+    desc: "GLM-5, GLM-4.7, CodeGeeX",
+    models: [
+      "glm-5.1",
+      "glm-5",
+      "glm-4.7",
+      "glm-4.7-flash",
+      "glm-4-long",
+      "codegeex-4",
+    ],
+  },
+  {
+    value: "moonshot",
+    label: "月之暗面 Moonshot",
+    desc: "Kimi K2, Moonshot V1",
+    models: [
+      "kimi-k2.5",
+      "kimi-k2-turbo-preview",
+      "kimi-k2-thinking",
+      "moonshot-v1-128k",
+      "moonshot-v1-32k",
+      "moonshot-v1-8k",
+    ],
+  },
+  {
+    value: "baichuan",
+    label: "百川 Baichuan",
+    desc: "Baichuan4, Baichuan3",
+    models: [
+      "Baichuan4-Turbo",
+      "Baichuan4",
+      "Baichuan4-Air",
+      "Baichuan3-Turbo",
+      "Baichuan3-Turbo-128k",
+    ],
+  },
+  {
+    value: "minimax",
+    label: "MiniMax",
+    desc: "MiniMax-M2 系列",
+    models: [
+      "MiniMax-M2.7",
+      "MiniMax-M2.5",
+      "MiniMax-M2-Her",
+      "MiniMax-M2.1",
+      "MiniMax-M2",
+    ],
+  },
+  {
     value: "custom",
     label: "Custom / Compatible",
     desc: "DeepSeek, Mistral, Groq, Together, any OpenAI-compatible API",
@@ -226,7 +286,7 @@ export default function SettingsPage() {
         <label className="text-xs text-[var(--text-muted)] uppercase tracking-wider mb-3 block">
           AI 提供商
         </label>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {PROVIDERS.map((p) => (
             <button
               key={p.value}
@@ -269,7 +329,17 @@ export default function SettingsPage() {
                 ? "sk-ant-api03-..."
                 : settings.provider === "openai"
                   ? "sk-..."
-                  : "输入 API Key"
+                  : settings.provider === "zhipu"
+                    ? "xxxxxxxx.xxxxxxxx"
+                    : settings.provider === "google"
+                      ? "AIza..."
+                      : settings.provider === "moonshot"
+                        ? "sk-..."
+                        : settings.provider === "baichuan"
+                          ? "sk-..."
+                          : settings.provider === "minimax"
+                            ? "xxxxxxxx..."
+                            : "输入 API Key"
             }
             className="w-full bg-[var(--bg-secondary)] border border-[var(--border)] rounded-lg px-3 py-2 pr-10 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--accent)] transition-colors"
           />
