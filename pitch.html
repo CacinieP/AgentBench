@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgentBench v0.5.0 — AI Agent 评测运维平台</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #0b0d11;
+    --bg-card: #161922;
+    --border: #1e2230;
+    --text: #e4e5e9;
+    --text-secondary: #9ca3af;
+    --text-muted: #6b7280;
+    --accent: #6366f1;
+    --accent-light: #818cf8;
+    --accent-bg: rgba(99,102,241,0.1);
+    --green: #22c55e;
+    --green-bg: rgba(34,197,94,0.1);
+    --red: #ef4444;
+    --red-bg: rgba(239,68,68,0.1);
+    --yellow: #eab308;
+    --yellow-bg: rgba(234,179,8,0.1);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    line-height: 1.6;
+  }
+
+  .slide {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 4rem 8vw;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .slide::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 60%;
+    height: 200%;
+    background: radial-gradient(ellipse at center, rgba(99,102,241,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.35rem 0.85rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+  }
+
+  h1 {
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    font-weight: 800;
+    line-height: 1.15;
+    letter-spacing: -0.03em;
+    margin-bottom: 1.5rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  h2 {
+    font-size: clamp(1.8rem, 3.5vw, 2.5rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 1.5rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  h3 {
+    font-size: 1.15rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+
+  .gradient-text {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6, #a78bfa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .subtitle {
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+    max-width: 700px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .meta {
+    display: flex;
+    gap: 1.5rem;
+    margin-top: 2rem;
+    flex-wrap: wrap;
+    position: relative;
+    z-index: 1;
+  }
+
+  .meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+  }
+
+  .meta-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.25rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .cards-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.75rem;
+  }
+
+  .card-icon {
+    width: 44px; height: 44px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+  }
+
+  .highlight-number {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 2.5rem;
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .stat {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+  }
+
+  .stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .stat-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-top: 0.25rem;
+  }
+
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .feature {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+    padding: 1.25rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+  }
+
+  .feature-check {
+    color: var(--green);
+    font-size: 1.1rem;
+    margin-top: 2px;
+    flex-shrink: 0;
+  }
+
+  /* Competition comparison table */
+  .compare-table {
+    width: 100%;
+    max-width: 800px;
+    border-collapse: separate;
+    border-spacing: 0;
+    position: relative;
+    z-index: 1;
+  }
+
+  .compare-table th {
+    text-align: left;
+    padding: 0.85rem 1.25rem;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    border-bottom: 2px solid var(--border);
+  }
+
+  .compare-table td {
+    padding: 0.85rem 1.25rem;
+    font-size: 0.9rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-secondary);
+  }
+
+  .compare-table tr:last-child td {
+    border-bottom: none;
+  }
+
+  .compare-table .col-label {
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .check { color: var(--green); font-weight: 600; }
+  .cross { color: var(--red); }
+  .partial { color: var(--yellow); }
+
+  /* Timeline */
+  .timeline {
+    display: flex;
+    gap: 0;
+    position: relative;
+    z-index: 1;
+    overflow-x: auto;
+    padding: 1rem 0;
+  }
+
+  .timeline-item {
+    flex: 1;
+    min-width: 130px;
+    text-align: center;
+    position: relative;
+    padding: 1.25rem 0.75rem 0;
+    border-top: 3px solid var(--border);
+  }
+
+  .timeline-item.done {
+    border-top-color: var(--green);
+  }
+
+  .timeline-item.current {
+    border-top-color: var(--accent);
+  }
+
+  .timeline-dot {
+    position: absolute;
+    top: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: var(--border);
+  }
+
+  .timeline-item.done .timeline-dot { background: var(--green); }
+  .timeline-item.current .timeline-dot { background: var(--accent); }
+
+  .timeline-version {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  .timeline-date {
+    display: block;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    margin-top: 0.1rem;
+  }
+
+  .timeline-desc {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin-top: 0.5rem;
+    line-height: 1.4;
+  }
+
+  .quadrant {
+    display: flex;
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 520px;
+    height: 380px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    position: relative;
+  }
+
+  .quadrant-h, .quadrant-v {
+    position: absolute;
+    background: var(--border);
+  }
+
+  .quadrant-h {
+    left: 0; right: 0; top: 50%;
+    height: 1px;
+  }
+
+  .quadrant-v {
+    top: 0; bottom: 0; left: 50%;
+    width: 1px;
+  }
+
+  .quadrant-label {
+    position: absolute;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+  }
+
+  .quadrant-bubble {
+    position: absolute;
+    background: var(--accent-bg);
+    border: 2px solid var(--accent);
+    border-radius: 999px;
+    padding: 0.4rem 0.9rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .version-tag {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    padding: 0.2rem 0.65rem;
+    border-radius: 6px;
+    background: var(--accent-bg);
+    color: var(--accent-light);
+  }
+
+  @media (max-width: 768px) {
+    .slide { padding: 3rem 5vw; }
+    .stat-grid { grid-template-columns: repeat(2, 1fr); }
+    .cards, .cards-3, .feature-grid { grid-template-columns: 1fr; }
+    .timeline { flex-direction: column; }
+    .timeline-item { border-top: none; border-left: 3px solid var(--border); text-align: left; padding: 0.5rem 1rem; }
+    .timeline-dot { top: 50%; left: -9px; }
+    .compare-table { font-size: 0.75rem; }
+    .compare-table th, .compare-table td { padding: 0.5rem 0.75rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════
+  SLIDE 1: 一句话 —— 我们是什么
+  ═══════════════════════════════════════ -->
+<section class="slide">
+  <div style="margin-bottom: 1rem; position: relative; z-index: 1;">
+    <span class="badge" style="background: var(--accent-bg); color: var(--accent-light);">
+      <span style="width:6px;height:6px;border-radius:50%;background:var(--accent-light);"></span>
+      v0.5.0 · MIT 开源
+    </span>
+  </div>
+  <h1>
+    <span class="gradient-text">AgentBench</span>
+  </h1>
+  <p style="font-size: 1.6rem; font-weight: 600; color: var(--text); position: relative; z-index: 1; margin-bottom: 0.5rem;">
+    AI Agent 评测运维平台
+  </p>
+  <p class="subtitle">
+    用 AI 测试 AI —— 像测试软件一样测试你的 Agent。<br>
+    回归测试、漂移检测、质量保障，一站完成。
+  </p>
+  <div class="meta">
+    <div class="meta-item"><span class="meta-dot"></span> Next.js 16 + React 19 + TypeScript</div>
+    <div class="meta-item"><span class="meta-dot"></span> 多提供商 AI（Anthropic + OpenAI + 自定义）</div>
+    <div class="meta-item"><span class="meta-dot"></span> 72 测试 · 零 Lint · 零构建错误</div>
+    <div class="meta-item"><span class="meta-dot"></span> 完全由 Claude Code 构建</div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════
+  SLIDE 2: 三个亮点（数据法 > 模式法 > 团队法）
+  ═══════════════════════════════════════ -->
+<section class="slide">
+  <div style="display: flex; align-items: baseline; gap: 1rem; margin-bottom: 2rem; position: relative; z-index: 1;">
+    <h2 style="margin-bottom: 0;">三个核心亮点</h2>
+    <span class="version-tag">按 BP 优先级排序</span>
+  </div>
+  <div class="cards-3">
+    <!-- 数据法 — 最高优先级 -->
+    <div class="card" style="border-top: 3px solid var(--green);">
+      <div class="card-icon" style="background: var(--green-bg); color: var(--green); font-family: 'JetBrains Mono'; font-weight: 700;">1</div>
+      <h3 style="color: var(--green);">数据法 — 硬指标说话</h3>
+      <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1rem;">
+        用数据证明质量，而非堆砌形容词。
+      </p>
+      <div style="display: flex; gap: 1.5rem; flex-wrap: wrap;">
+        <div>
+          <span class="highlight-number" style="color: var(--green);">72</span>
+          <p style="font-size: 0.75rem; color: var(--text-muted);">测试通过</p>
+        </div>
+        <div>
+          <span class="highlight-number" style="color: var(--accent-light);">6</span>
+          <p style="font-size: 0.75rem; color: var(--text-muted);">评测器类型</p>
+        </div>
+        <div>
+          <span class="highlight-number" style="color: var(--green);">0</span>
+          <p style="font-size: 0.75rem; color: var(--text-muted);">TS/Lint 错误</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 模式法 -->
+    <div class="card" style="border-top: 3px solid var(--accent);">
+      <div class="card-icon" style="background: var(--accent-bg); color: var(--accent-light); font-family: 'JetBrains Mono'; font-weight: 700;">2</div>
+      <h3 style="color: var(--accent-light);">模式法 — 差异化路径</h3>
+      <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1rem;">
+        市面上唯一的"本地优先 + 多提供商 AI + 无后端"评测平台。
+      </p>
+      <p style="font-size: 0.85rem; color: var(--text-muted);">
+        • 数据全存 localStorage，导出/导入 JSON<br>
+        • 支持 OpenAI、Anthropic、自定义 HTTP<br>
+        • 无需数据库、无需服务器，可自行部署
+      </p>
+    </div>
+
+    <!-- 团队法 -->
+    <div class="card" style="border-top: 3px solid var(--yellow);">
+      <div class="card-icon" style="background: var(--yellow-bg); color: var(--yellow); font-family: 'JetBrains Mono'; font-weight: 700;">3</div>
+      <h3 style="color: var(--yellow);">团队法 — AI 原生构建</h3>
+      <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1rem;">
+        整个平台完全由 Claude Code 构建。AI 编码既是手段，也是作品本身。
+      </p>
+      <p style="font-size: 0.85rem; color: var(--text-muted);">
+        • 3 轮迭代 · 20+ bug 修复<br>
+        • 18+ 文件中文化本地化<br>
+        • CC Switch 联动 · 真实数据驱动评测
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════
+  SLIDE 3: 市场有多大 —— 为什么需要这个
+  ═══════════════════════════════════════ -->
+<section class="slide">
+  <h2>为什么需要 AgentBench</h2>
+  <p style="color: var(--text-muted); margin-bottom: 2rem; position: relative; z-index: 1; max-width: 600px;">
+    "市场分析"本是最容易被跳过的环节。但如果你在做 AI Agent，以下三个事实你绕不开。
+  </p>
+  <div class="cards-3" style="margin-bottom: 2.5rem;">
+    <div class="card">
+      <div class="card-icon" style="background: var(--red-bg); color: var(--red); font-size: 1.5rem;">&#9888;</div>
+      <h3>Agent 质量极其脆弱</h3>
+      <p style="color: var(--text-secondary); font-size: 0.9rem;">
+        提示词调整、模型升级、微调更新，任何改动都可能无声地降低 Agent 性能。没有系统化测试，回归问题不会被发现——直到用户投诉。
+      </p>
+    </div>
+    <div class="card">
+      <div class="card-icon" style="background: var(--yellow-bg); color: var(--yellow); font-size: 1.5rem;">&#9881;</div>
+      <h3>AI Agent 缺少标准 QA</h3>
+      <p style="color: var(--text-secondary); font-size: 0.9rem;">
+        传统软件 QA 工具（JUnit、Selenium、Jest）无法测试 AI Agent。你只能用 AI 来测试 AI——将实际响应与预期行为进行系统化对比。
+      </p>
+    </div>
+    <div class="card">
+      <div class="card-icon" style="background: var(--accent-bg); color: var(--accent-light); font-size: 1.5rem;">&#9889;</div>
+      <h3>评测运维是下一片蓝海</h3>
+      <p style="color: var(--text-secondary); font-size: 0.9rem;">
+        在 46 天的机会分析中，Agent 回归测试需求出现了 12+ 次。随着 AI Agent 从实验走向生产，评测运维将成为每个 Agent 团队的必备基础设施。
+      </p>
+    </div>
+  </div>
+  <div style="position: relative; z-index: 1; text-align: center;">
+    <p style="color: var(--accent-light); font-weight: 600; font-size: 1.15rem;">
+      "用 AI 测试 AI" —— 这不是口号，这是 Agent 时代的质量范式
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════
+  SLIDE 4: 我们做了什么 —— 产品展示
+  ═══════════════════════════════════════ -->
+<section class="slide">
+  <h2>产品功能全景</h2>
+  <p style="color: var(--text-muted); margin-bottom: 2rem; position: relative; z-index: 1;">
+    具象展示胜过千言万语。六大核心功能模块。
+  </p>
+  <div class="feature-grid">
+    <div class="feature">
+      <span class="feature-check">&#10003;</span>
+      <div>
+        <h3 style="font-size: 1rem;">测试套件管理</h3>
+        <p style="font-size: 0.8rem; color: var(--text-muted);">创建、编辑、导入（JSON/JSONL）、删除。每个用例可自定义评测器。</p>
+      </div>
+    </div>
+    <div class="feature">
+      <span class="feature-check">&#10003;</span>
+      <div>
+        <h3 style="font-size: 1rem;">多评测器引擎</h3>
+        <p style="font-size: 0.8rem; color: var(--text-muted);">精确匹配 · 包含（关键短语/否定感知）· 正则 · JSON Schema · LLM 评判 · 代码测试</p>
+      </div>
+    </div>
+    <div class="feature">
+      <span class="feature-check">&#10003;</span>
+      <div>
+        <h3 style="font-size: 1rem;">真实与模拟模式</h3>
+        <p style="font-size: 0.8rem; color: var(--text-muted);">直连 Agent 端点（OpenAI/Anthropic/自定义 HTTP），或运行模拟回归测试。</p>
+      </div>
+    </div>
+    <div class="feature">
+      <span class="feature-check">&#10003;</span>
+      <div>
+        <h3 style="font-size: 1rem;">版本回归对比</h3>
+        <p style="font-size: 0.8rem; color: var(--text-muted);">并排版本比较，含得分差异、通过率变化、不稳定检测、可视化柱状图。</p>
+      </div>
+    </div>
+    <div class="feature">
+      <span class="feature-check">&#10003;</span>
+      <div>
+        <h3 style="font-size: 1rem;">AI 驱动分析</h3>
+        <p style="font-size: 0.8rem; color: var(--text-muted);">多提供商 AI 识别回归模式并建议修复方案。无 API Key 时优雅降级至演示模式。</p>
+      </div>
+    </div>
+    <div class="feature">
+      <span class="feature-check">&#10003;</span>
+      <div>
+        <h3 style="font-size: 1rem;">本地优先 · 零后端</h3>
+        <p style="font-size: 0.8rem; color: var(--text-muted);">所有数据存储于 localStorage。导出/导入 JSON。无需数据库，可自行部署。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════
+  SLIDE 5: 数据表现（最关键的一页）
+  ═══════════════════════════════════════ -->
+<section class="slide">
+  <h2>数据表现</h2>
+  <p style="color: var(--text-muted); margin-bottom: 2rem; position: relative; z-index: 1;">
+    不需要大，但需要证明"行得通"。
+  </p>
+  <div class="stat-grid" style="margin-bottom: 2.5rem;">
+    <div class="stat">
+      <div class="stat-value" style="color: var(--green);">72</div>
+      <div class="stat-label">测试通过</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value" style="color: var(--accent-light);">3</div>
+      <div class="stat-label">测试文件</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value" style="color: var(--green);">0</div>
+      <div class="stat-label">TypeScript 错误</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value" style="color: var(--green);">0</div>
+      <div class="stat-label">ESLint 警告</div>
+    </div>
+  </div>
+  <div class="cards" style="grid-template-columns: 1fr 1fr;">
+    <div class="card">
+      <h3 style="font-size: 0.95rem;">测试覆盖详情</h3>
+      <div style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.6rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-size: 0.85rem; color: var(--text-secondary);">evaluator.test.ts</span>
+          <span style="font-family: monospace; color: var(--green); font-size: 0.85rem;">43 测试</span>
+        </div>
+        <div style="height: 4px; background: var(--border); border-radius: 2px;">
+          <div style="height: 100%; width: 60%; background: var(--green); border-radius: 2px;"></div>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-size: 0.85rem; color: var(--text-secondary);">utils.test.ts</span>
+          <span style="font-family: monospace; color: var(--green); font-size: 0.85rem;">14 测试</span>
+        </div>
+        <div style="height: 4px; background: var(--border); border-radius: 2px;">
+          <div style="height: 100%; width: 19%; background: var(--accent); border-radius: 2px;"></div>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-size: 0.85rem; color: var(--text-secondary);">agent-adapter.test.ts</span>
+          <span style="font-family: monospace; color: var(--green); font-size: 0.85rem;">15 测试</span>
+        </div>
+        <div style="height: 4px; background: var(--border); border-radius: 2px;">
+          <div style="height: 100%; width: 21%; background: var(--accent-light); border-radius: 2px;"></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <h3 style="font-size: 0.95rem;">评测器体系</h3>
+      <div style="margin-top: 1rem; display: flex; flex-wrap: wrap; gap: 0.5rem;">
+        <span style="background: var(--accent-bg); color: var(--accent-light); padding: 0.3rem 0.7rem; border-radius: 6px; font-size: 0.75rem;">包含匹配</span>
+        <span style="background: var(--accent-bg); color: var(--accent-light); padding: 0.3rem 0.7rem; border-radius: 6px; font-size: 0.75rem;">精确匹配</span>
+        <span style="background: var(--accent-bg); color: var(--accent-light); padding: 0.3rem 0.7rem; border-radius: 6px; font-size: 0.75rem;">正则</span>
+        <span style="background: var(--accent-bg); color: var(--accent-light); padding: 0.3rem 0.7rem; border-radius: 6px; font-size: 0.75rem;">JSON Schema</span>
+        <span style="background: var(--accent-bg); color: var(--accent-light); padding: 0.3rem 0.7rem; border-radius: 6px; font-size: 0.75rem;">LLM 评判</span>
+        <span style="background: var(--green-bg); color: var(--green); padding: 0.3rem 0.7rem; border-radius: 6px; font-size: 0.75rem;">代码测试</span>
+      </div>
+      <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 1rem;">
+        从文本匹配到语义理解，从结构验证到代码质量——正交覆盖 Agent 评测的所有维度。
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════
+  SLIDE 6: 竞品分析（比较表 + 象限图）
+  ═══════════════════════════════════════ -->
+<section class="slide">
+  <h2>竞品分析</h2>
+  <p style="color: var(--text-muted); margin-bottom: 1.5rem; position: relative; z-index: 1;">
+    没有直接对手，但传统工具无法解决 AI Agent 评测问题。
+  </p>
+
+  <!-- 比较表 -->
+  <div style="overflow-x: auto; margin-bottom: 2rem; position: relative; z-index: 1;">
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th style="width: 18%;">维度</th>
+          <th style="width: 27%; background: var(--accent-bg); border-radius: 8px 8px 0 0;">
+            <span style="color: var(--accent-light);">AgentBench</span>
+          </th>
+          <th style="width: 27%;">传统 QA 工具<br><span style="font-weight: 400; text-transform: none; font-size: 0.7rem;">(Jest/Selenium/JUnit)</span></th>
+          <th style="width: 27%;">手工评测<br><span style="font-weight: 400; text-transform: none; font-size: 0.7rem;">(人工抽查/Excel)</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="col-label">AI Agent 评测</td>
+          <td style="background: var(--accent-bg);"><span class="check">&#10003; 专为此设计</span></td>
+          <td><span class="cross">&#10007; 不适用</span></td>
+          <td><span class="partial">&#9681; 低效、不可扩展</span></td>
+        </tr>
+        <tr>
+          <td class="col-label">语义理解</td>
+          <td style="background: var(--accent-bg);"><span class="check">&#10003; LLM 评判 + 6 种评测器</span></td>
+          <td><span class="cross">&#10007; 仅支持精确断言</span></td>
+          <td><span class="partial">&#9681; 依赖个人判断</span></td>
+        </tr>
+        <tr>
+          <td class="col-label">回归测试</td>
+          <td style="background: var(--accent-bg);"><span class="check">&#10003; 自动化版本对比</span></td>
+          <td><span class="cross">&#10007; 不支持 AI 输出对比</span></td>
+          <td><span class="cross">&#10007; 完全手动</span></td>
+        </tr>
+        <tr>
+          <td class="col-label">部署与数据</td>
+          <td style="background: var(--accent-bg);"><span class="check">&#10003; 本地优先 · 零后端 · 可移植</span></td>
+          <td><span class="partial">&#9681; 需 CI/CD 集成</span></td>
+          <td><span class="cross">&#10007; 无系统化方案</span></td>
+        </tr>
+        <tr>
+          <td class="col-label">多 AI 提供商</td>
+          <td style="background: var(--accent-bg); border-radius: 0 0 8px 8px;"><span class="check">&#10003; 3+ 提供商</span></td>
+          <td><span class="cross">&#10007; N/A</span></td>
+          <td><span class="cross">&#10007; N/A</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p style="font-size: 0.85rem; color: var(--text-muted); position: relative; z-index: 1; max-width: 700px;">
+    <strong>一句话分析：</strong>AgentBench 是唯一专为 AI Agent 设计的评测运维平台。传统 QA 工具的断言模型无法处理 AI 输出的模糊性和多样性，手工评测则不可持续。
+  </p>
+</section>
+
+<!-- ═══════════════════════════════════════
+  SLIDE 7: 架构 —— 我们怎么做
+  ═══════════════════════════════════════ -->
+<section class="slide">
+  <h2>架构与技术栈</h2>
+  <p style="color: var(--text-muted); margin-bottom: 2rem; position: relative; z-index: 1;">
+    极简架构，四个组件覆盖完整评测流程。
+  </p>
+  <div class="cards" style="grid-template-columns: repeat(4, 1fr);">
+    <div class="card">
+      <div class="card-icon" style="background: var(--accent-bg); color: var(--accent-light);">&#128187;</div>
+      <h3>前端</h3>
+      <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem;">
+        Next.js 16 App Router<br>
+        React 19 + TypeScript<br>
+        Tailwind CSS 4 暗色主题<br>
+        useSyncExternalStore
+      </p>
+    </div>
+    <div class="card">
+      <div class="card-icon" style="background: var(--green-bg); color: var(--green);">&#9881;</div>
+      <h3>API 层</h3>
+      <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem;">
+        /api/execute — 代理转发<br>
+        /api/analyze — AI 分析<br>
+        密钥不落服务器<br>
+        演示模式优雅降级
+      </p>
+    </div>
+    <div class="card">
+      <div class="card-icon" style="background: var(--yellow-bg); color: var(--yellow);">&#128295;</div>
+      <h3>评测引擎</h3>
+      <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem;">
+        6 种评测器类型<br>
+        LLM 评判含回退机制<br>
+        Token 费用估算<br>
+        可配置通过阈值
+      </p>
+    </div>
+    <div class="card">
+      <div class="card-icon" style="background: var(--green-bg); color: var(--green);">&#128230;</div>
+      <h3>数据层</h3>
+      <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem;">
+        套件 & 运行 → localStorage<br>
+        设置 → localStorage<br>
+        导出/导入 JSON + JSONL<br>
+        首次访问自动播种
+      </p>
+    </div>
+  </div>
+  <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 2rem; position: relative; z-index: 1; text-align: center;">
+    MIT 开源 · 无需后端 · 无需数据库 · 可自行部署
+  </p>
+</section>
+
+<!-- ═══════════════════════════════════════
+  SLIDE 8: 里程碑与时间轴
+  ═══════════════════════════════════════ -->
+<section class="slide">
+  <h2>里程碑与发展计划</h2>
+  <p style="color: var(--text-muted); margin-bottom: 2rem; position: relative; z-index: 1;">
+    已达成 5 个版本迭代，持续演进中。
+  </p>
+  <div class="timeline">
+    <div class="timeline-item done">
+      <div class="timeline-dot"></div>
+      <span class="timeline-version">v0.1.0</span>
+      <span class="timeline-date">2026.05</span>
+      <p class="timeline-desc">核心功能上线<br>测试套件 + 运行引擎<br>35 测试</p>
+    </div>
+    <div class="timeline-item done">
+      <div class="timeline-dot"></div>
+      <span class="timeline-version">v0.2.0</span>
+      <span class="timeline-date">2026.05</span>
+      <p class="timeline-desc">CRUD 完善<br>删除套件/运行<br>确认弹窗</p>
+    </div>
+    <div class="timeline-item done">
+      <div class="timeline-dot"></div>
+      <span class="timeline-version">v0.3.0</span>
+      <span class="timeline-date">2026.05</span>
+      <p class="timeline-desc">UX 交互优化<br>Escape 关闭 · 点击外部<br>共享 Hook 提取</p>
+    </div>
+    <div class="timeline-item done">
+      <div class="timeline-dot"></div>
+      <span class="timeline-version">v0.4.0</span>
+      <span class="timeline-date">2026.05</span>
+      <p class="timeline-desc">测试扩展<br>35→59 测试<br>可访问性增强</p>
+    </div>
+    <div class="timeline-item current">
+      <div class="timeline-dot"></div>
+      <span class="timeline-version" style="color: var(--accent-light);">v0.5.0</span>
+      <span class="timeline-date">2026.05 · 当前</span>
+      <p class="timeline-desc">全面中文化<br>代码评测器上线<br>CC Switch 联动</p>
+    </div>
+  </div>
+  <div style="margin-top: 2.5rem; position: relative; z-index: 1;">
+    <h3 style="font-size: 0.95rem; color: var(--text-muted); margin-bottom: 0.75rem;">下一阶段计划</h3>
+    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+      <span style="background: var(--bg-card); border: 1px solid var(--border); padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.85rem; color: var(--text-secondary);">JSON Schema 全规范支持</span>
+      <span style="background: var(--bg-card); border: 1px solid var(--border); padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.85rem; color: var(--text-secondary);">人工标注校准基准</span>
+      <span style="background: var(--bg-card); border: 1px solid var(--border); padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.85rem; color: var(--text-secondary);">统计显著性检验</span>
+      <span style="background: var(--bg-card); border: 1px solid var(--border); padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.85rem; color: var(--text-secondary);">CI/CD 集成</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════
+  SLIDE 9: 团队 —— 谁在做
+  ═══════════════════════════════════════ -->
+<section class="slide">
+  <h2>构建方式</h2>
+  <p style="color: var(--text-muted); margin-bottom: 2rem; position: relative; z-index: 1;">
+    不是"团队"——是 AI 原生开发范式的一次验证。
+  </p>
+  <div class="cards-3">
+    <div class="card">
+      <div class="card-icon" style="background: var(--accent-bg); color: var(--accent-light);">&#129302;</div>
+      <h3>100% AI 构建</h3>
+      <p style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 0.5rem;">
+        整个 AgentBench 平台完全由 Claude Code 编写。从第一行代码到中文翻译到测试——每一行都是 AI 生成。
+      </p>
+      <div style="margin-top: 1rem; display: flex; gap: 1rem; font-size: 0.8rem; color: var(--text-muted);">
+        <div><span style="color: var(--accent-light); font-weight: 600;">3</span> 轮迭代</div>
+        <div><span style="color: var(--accent-light); font-weight: 600;">20+</span> Bug 修复</div>
+        <div><span style="color: var(--accent-light); font-weight: 600;">18+</span> 文件本地化</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-icon" style="background: var(--green-bg); color: var(--green);">&#128268;</div>
+      <h3>CC Switch 联动</h3>
+      <p style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 0.5rem;">
+        通过 CC Switch 中间件采集真实 Claude Code 交互数据（5,340 次请求），自动生成编码任务测试套件，形成评测闭环。
+      </p>
+      <div style="margin-top: 1rem; display: flex; gap: 1rem; font-size: 0.8rem; color: var(--text-muted);">
+        <div><span style="color: var(--green); font-weight: 600;">5,340</span> 请求分析</div>
+        <div><span style="color: var(--green); font-weight: 600;">90%</span> 缓存命中</div>
+        <div><span style="color: var(--green); font-weight: 600;">4</span> 套件导出</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-icon" style="background: var(--yellow-bg); color: var(--yellow);">&#127758;</div>
+      <h3>开源社区驱动</h3>
+      <p style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 0.5rem;">
+        MIT 许可证，完全开源。任何 AI Agent 团队都可以自行部署、贡献测试套件、扩展评测器类型。
+      </p>
+      <div style="margin-top: 1rem; display: flex; gap: 1rem; font-size: 0.8rem; color: var(--text-muted);">
+        <div><span style="color: var(--yellow); font-weight: 600;">MIT</span> 许可证</div>
+        <div><span style="color: var(--yellow); font-weight: 600;">0</span> 外部依赖</div>
+        <div><span style="color: var(--yellow); font-weight: 600;">1</span> 命令部署</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════
+  SLIDE 10: 结尾 CTA
+  ═══════════════════════════════════════ -->
+<section class="slide" style="text-align: center;">
+  <div style="position: relative; z-index: 1;">
+    <div style="margin-bottom: 1rem;">
+      <span class="badge" style="background: var(--green-bg); color: var(--green);">
+        <span style="width:6px;height:6px;border-radius:50%;background:var(--green);"></span>
+        可演示 · MIT 开源
+      </span>
+    </div>
+    <h1 style="margin-bottom: 1rem;">
+      <span class="gradient-text">AgentBench</span>
+    </h1>
+    <p class="subtitle" style="margin: 0 auto 1rem; text-align: center;">
+      AI Agent 评测运维平台 — 用 AI 测试 AI
+    </p>
+    <p style="font-size: 0.9rem; color: var(--text-muted); max-width: 500px; margin: 0 auto 2rem;">
+      附创始人联系方式 · GitHub 二维码 · 开源地址
+    </p>
+    <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-bottom: 2rem;">
+      <div class="stat" style="min-width: 130px;">
+        <div class="stat-value" style="color: var(--accent-light); font-size: 1.5rem;">6</div>
+        <div class="stat-label">评测器类型</div>
+      </div>
+      <div class="stat" style="min-width: 130px;">
+        <div class="stat-value" style="color: var(--accent-light); font-size: 1.5rem;">72</div>
+        <div class="stat-label">测试通过</div>
+      </div>
+      <div class="stat" style="min-width: 130px;">
+        <div class="stat-value" style="color: var(--green); font-size: 1.5rem;">3+</div>
+        <div class="stat-label">AI 提供商</div>
+      </div>
+      <div class="stat" style="min-width: 130px;">
+        <div class="stat-value" style="color: var(--green); font-size: 1.5rem;">0</div>
+        <div class="stat-label">后端依赖</div>
+      </div>
+    </div>
+    <div class="meta" style="justify-content: center; margin-top: 3rem;">
+      <div class="meta-item"><span class="meta-dot"></span> MIT 许可证</div>
+      <div class="meta-item"><span class="meta-dot"></span> github.com/LinguistWantsTech/agentbench</div>
+      <div class="meta-item"><span class="meta-dot"></span> 由 Claude Code 构建</div>
+    </div>
+  </div>
+</section>
+
+</body>
+</html>
